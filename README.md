@@ -9,7 +9,11 @@ O SINAPI+ é uma aplicação web desenvolvida em Python/Streamlit que simula cus
 
 A aplicação permite criar orçamentos detalhados para diferentes categorias de infraestrutura, com preços regionalizados para todos os estados brasileiros.
 
-Preços conforme SINAPI Agosto/25.
+![alt text](app/images/home_page.png)
+
+![alt text](app/images/preenchimento1.png)
+
+![alt text](app/images/resultados.png)
 
 ## 🚀 **Funcionalidades Principais**
 
@@ -55,12 +59,21 @@ sinapi+/
 │   │   ├── home.py                      # Página inicial
 │   │   ├── sinapi_agua_potavel.py       # Levantamento de itens de água potável
 │   │   └── sinapi_esgoto.py             # Levantamento de itens de esgoto sanitário
+│   │   └── resultados.py             # Resumo do resultado simulado
 │   └──  main.py                          # Configuração principal do Streamlit
+│
+├── 📂 pricing/         # Precificação das composições por categoria
+│   ├── custos_agua_potavel.py            # Precificação dos itens da rede de água
+│   └── custos_esgoto.py  # Precificação dos itens da rede de esgoto
 │
 ├── 📂 excel_files/         # Bases de dados oficiais
 │   ├── base_composicoes.xlsx            # Catálogo de composições
 │   └── precos_composicoes_insumos.xlsx  # Tabela de preços regionalizados
 │
+├── 📂 images/         # Imagens utilizadas
+│
+├── utils.py         # Funções auxiliares 
+├── app_state.py         # Gerenciamento do session_state da aplicação 
 ├── data_loading.py      # Utilitários de carga de dados
 ├── ProcessarComposicao.py     # Processa composições selecionadas e retorna os resultados
 ├── requirements.txt     # Dependências do projeto
