@@ -23,7 +23,12 @@ class PrecificarComposicao:
         ]
         self.descricao_composicao = self.df_base_composicoes.loc[
             self.df_base_composicoes["codigo_composicao"] == self.codigo_composicao,
-            "descricao_da_composicao"
+            "descricao_da_composicao",
+        ].values[0]
+        self.unidade = self.df_base_composicoes.loc[
+            (self.df_base_composicoes["codigo_composicao"] == self.codigo_composicao)
+            & (self.df_base_composicoes["codigo_composicao_secundaria"].isna()),
+            "unidade",
         ].values[0]
 
     @classmethod
@@ -136,6 +141,7 @@ class PrecificarComposicao:
             "quantidade": self.quantidade_composicao,
             "codigo_base": self.codigo_composicao,
             "descricao": self.descricao_composicao,
+            "unidade":self.unidade,
             "estado": self.estado,
             "_escopo": self.escopo,
         }

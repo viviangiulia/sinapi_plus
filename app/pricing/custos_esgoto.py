@@ -22,10 +22,12 @@ def custo_total_esgoto(escopo):
 
     composicoes_rede_esgoto = {
         "ocre": {
-            150: "COMP-AGUA-006",
-            200: "COMP-AGUA-007",
-            250: "COMP-AGUA-008",
-            300: "COMP-AGUA-009",
+            100: "COMP-ESGOTO-009",
+            150: "COMP-ESGOTO-010",
+            200: "COMP-ESGOTO-011",
+            250: "COMP-ESGOTO-012",
+            300: "COMP-ESGOTO-013",
+            350: "COMP-ESGOTO-014",
         },
     }
 

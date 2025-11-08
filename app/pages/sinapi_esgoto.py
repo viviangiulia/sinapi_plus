@@ -1,6 +1,7 @@
 import streamlit as st
 from pricing.custos_esgoto import custo_total_esgoto
 from ProcessarComposicao import PrecificarComposicao
+from utils import calcular_custo_categoria
 
 session = st.session_state
 _, __, coluna = st.columns([3, 1, 1])
@@ -64,7 +65,7 @@ with tab2:
         with col_1:
             st.selectbox(
                 label=f"Diâmetro do Trecho {trecho + 1} (mm)",
-                options=[150, 150, 200, 250, 300, 350, 400],
+                options=[100,150, 200, 250, 300, 350, 400],
                 key=f"input_esgoto_diametro_ocre_{trecho + 1}",
             )
 
@@ -119,7 +120,8 @@ with tab3:
 PrecificarComposicao.finalizar_sincronizacao(escopo)
 custo_total_esgoto(escopo)
 with coluna:
+    custo_total_escopo = calcular_custo_categoria(escopo)
     st.metric(
         "Total (R$) - Esgoto Sanitário",
-        0.00,
+        round(custo_total_escopo, 2),
     )

@@ -11,6 +11,13 @@ def initial_session_state():
         "input_agua_hidrometro": 0,
         "input_agua_qtd_trechos_pba": 0,
         "input_agua_qtd_trechos_defofo": 0,
+        "input_esgoto_qtd_ligacao_4m":0,
+        "input_esgoto_qtd_ligacao_6m":0,
+        "input_esgoto_qtd_trechos_ocre":0,
+        "input_esgoto_pv_max_150":0,
+        "input_esgoto_pv_max_250":0,
+        "input_esgoto_pv_max_200":0,
+        "input_esgoto_pv_max_300":0,
     }
 
     for key, value in defaults.items():

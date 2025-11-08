@@ -1,6 +1,7 @@
 import streamlit as st
 from ProcessarComposicao import PrecificarComposicao
 from pricing.custos_agua_potavel import custo_total_agua_potavel
+from utils import calcular_custo_categoria
 
 session = st.session_state
 _, __, coluna = st.columns([3,1,1])
@@ -103,7 +104,7 @@ with tab3:
         with col_1:
             st.selectbox(
                 f"Diâmetro do Trecho {trecho + 1} (mm)",
-                options= [100,150,200,250,300],            
+                options= [150,200,250,300],            
                 key=f'input_agua_diametro_defofo_{trecho + 1}'
             )
         
@@ -117,8 +118,9 @@ with tab3:
 PrecificarComposicao.finalizar_sincronizacao(escopo)
 custo_total_agua_potavel(escopo)
 
-with coluna:   
+with coluna:
+    custo_total_escopo = calcular_custo_categoria(escopo)
     st.metric(
         'Total (R$) - Água Potável',
-        0.00,
+        round(custo_total_escopo,2),
               )
