@@ -19,25 +19,25 @@ A aplicação permite criar orçamentos detalhados para diferentes categorias de
 
 **Simulação de Custos**
 
-Seleção de Itens: Escolha entre composições pré-definidas de infraestrutura.
+- Seleção de Itens: Escolha entre composições pré-definidas de infraestrutura.
 
-Quantificação Flexível: Defina quantidades personalizadas para cada item.
+- Quantificação Flexível: Defina quantidades personalizadas para cada item.
 
-Especificação Detalhada: Ajuste parâmetros técnicos conforme necessidade.
+- Especificação Detalhada: Ajuste parâmetros técnicos conforme necessidade.
 
 **Regionalização de Preços**
 
-Abrangência Nacional: Preços específicos para todos os 27 estados brasileiros.
+- Abrangência Nacional: Preços específicos para todos os 27 estados brasileiros.
 
-Atualização Automática: Baseado nos dados oficiais mais recentes do SINAPI.
+- Atualização Automática: Baseado nos dados oficiais mais recentes do SINAPI.
 
-Comparação Regional: Analise variações de custo entre diferentes estados.
+- Comparação Regional: Analise variações de custo entre diferentes estados.
 
 **Categorias Implementadas**
 
-Água Potável: Ligações prediais, redes de distribuição, hidrômetros.
+- Água Potável: Ligações prediais, redes de distribuição, hidrômetros.
 
-Esgoto Sanitário: Redes coletoras, poços de visita, ligações prediais.
+- Esgoto Sanitário: Redes coletoras, poços de visita, ligações prediais.
 
 Em expansão: Pavimentação, Drenagem, Energia
 
@@ -54,30 +54,34 @@ Em expansão: Pavimentação, Drenagem, Energia
 
 ```bash
 sinapi+/
-├── 📂 app/                 # Aplicação principal Streamlit
-│   ├── 📂 pages/           # Módulos/páginas da aplicação
-│   │   ├── home.py                      # Página inicial
-│   │   ├── sinapi_agua_potavel.py       # Levantamento de itens de água potável
-│   │   └── sinapi_esgoto.py             # Levantamento de itens de esgoto sanitário
-│   │   └── resultados.py             # Resumo do resultado simulado
-│   └──  main.py                          # Configuração principal do Streamlit
+├── 📂 app/
+│   ├── main.py                       # Inicialização multipage do Streamlit
+│   ├── app_state.py                  # Persistência de estado (session_state)
+│   ├── data_loading.py               # Cache e carregamento das bases (.xlsx)
+│   ├── utils.py                      # Funções auxiliares gerais
+│   │
+│   ├── 📂 pages/
+│   │   ├── home.py                   # Página inicial
+│   │   ├── sinapi_agua_potavel.py    # Interface para inputs de Água
+│   │   ├── sinapi_esgoto.py          # Interface para inputs de Esgoto
+│   │   └── resultados.py             # Exibição do orçamento, totais e avisos
+│   │
+│   ├── 📂 configs/
+│   │   ├── config_agua.py            # CONFIG_AGUA
+│   │   └── config_esgoto.py          # CONFIG_ESGOTO
+│   │
+│   ├── 📂 excel_files/
+│   │   ├── base_composicoes.xlsx
+│   │   └── precos_composicoes_insumos.xlsx
+│   │
+│   └── 📂 images/
+├── ProcessarComposicao.py               # TODAS AS CLASSES DO MOTOR DE CÁLCULO
+│                                        # (InputCollector, InputMapper,
+│                                        #  OrcamentoBuilder, Precificador,
+│                                        #  OrcamentoAnalyzer)
 │
-├── 📂 pricing/         # Precificação das composições por categoria
-│   ├── custos_agua_potavel.py            # Precificação dos itens da rede de água
-│   └── custos_esgoto.py  # Precificação dos itens da rede de esgoto
-│
-├── 📂 excel_files/         # Bases de dados oficiais
-│   ├── base_composicoes.xlsx            # Catálogo de composições
-│   └── precos_composicoes_insumos.xlsx  # Tabela de preços regionalizados
-│
-├── 📂 images/         # Imagens utilizadas
-│
-├── utils.py         # Funções auxiliares 
-├── app_state.py         # Gerenciamento do session_state da aplicação 
-├── data_loading.py      # Utilitários de carga de dados
-├── ProcessarComposicao.py     # Processa composições selecionadas e retorna os resultados
-├── requirements.txt     # Dependências do projeto
-└── README.md            # Documentação
+├── requirements.txt
+└── README.md
 ```
 
 
@@ -151,8 +155,6 @@ Contribuições são bem-vindas!
 Áreas de melhoria:
 
 - Implementar novas categorias (pavimentação, drenagem)
-
-- Adicionar exportação para Excel/PDF
 
 - Desenvolver análises preditivas
 
