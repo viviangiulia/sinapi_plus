@@ -1,49 +1,110 @@
 import pandas as pd
-from collections import defaultdict
 import streamlit as st
+from typing import Dict, Tuple
+from configs.config_agua import CONFIG_AGUA
+from configs.config_esgoto import CONFIG_ESGOTO
 
+class InputCollector:
+    def __init__(self, session: Dict) -> None:
 
-class PrecificarComposicao:
-    """Processa cada composição cadastrada na base de códigos.
-    Com base nos inputs do usuário (estado e quantidade) realiza a precificação da composição.
-    """
+        for key, value in session.items():
+            if key.startswith("input_"):
+                # new_key = key.replace("input_", "")
+                setattr(self, key, value)
 
-    dicionario_resultante = {}
-    _processados_no_rerun = defaultdict(set)
-
-    def __init__(self, session, codigo_composicao, quantidade, escopo="_default"):
-        self.session = session
-        self.estado = session.get("input_estado", "SP")
-        self.codigo_composicao = codigo_composicao
-        self.quantidade_composicao = session.get(quantidade, 0)
-        self.escopo = escopo
-        self.df_base_composicoes = self.session["arquivos_base"]["base_composicoes"]
-        self.df_base_precos = self.session["arquivos_base"][
+        self.base_composicoes = session["arquivos_base"]["base_composicoes"]
+        self.precos_composicoes_insumos = session["arquivos_base"][
             "precos_composicoes_insumos"
         ]
-        self.descricao_composicao = self.df_base_composicoes.loc[
-            self.df_base_composicoes["codigo_composicao"] == self.codigo_composicao,
-            "descricao_da_composicao",
-        ].values[0]
-        self.unidade = self.df_base_composicoes.loc[
-            (self.df_base_composicoes["codigo_composicao"] == self.codigo_composicao)
-            & (self.df_base_composicoes["codigo_composicao_secundaria"].isna()),
-            "unidade",
-        ].values[0]
+
+
+class InputMapper:
+    """Resonsável por converter a informação dos inputs em composição e quantidade de forma que permita a precificação do item selecionado pelo usuário."""
+
+    handlers = {}
 
     @classmethod
-    def iniciar_sincronizacao(cls, escopo="_default"):
-        cls._processados_no_rerun[escopo].clear()
+    def register(cls, nome_regra):
+        """Decorador que adiciona ao handler registry as funções que devem ser executadas com base em cada regra de negócio."""
 
-    @classmethod
-    def finalizar_sincronizacao(cls, escopo="_default"):
-        validas = cls._processados_no_rerun[escopo]
-        for k in list(cls.dicionario_resultante.keys()):
-            if (
-                cls.dicionario_resultante[k].get("_escopo") == escopo
-                and k not in validas
-            ):
-                del cls.dicionario_resultante[k]
+        def wrapper(func):
+            cls.handlers[nome_regra] = func
+            return func
+
+        return wrapper
+
+    def __init__(self, collector: InputCollector):
+        self.inputs = collector  # valores já limpos da interface
+
+    def converter_categoria(self, config_categoria: Dict) -> list[Dict]:
+        """Executa a conversão de todos os inputs da categoria para composições orçamentárias e quantidades.
+        Já executa a conversão com base em regras personalizadas utilizando métodos específicos para cada regra.
+        """
+        itens = []
+
+        for nome_regra, conteudo_regra in config_categoria.items():
+            if nome_regra in self.handlers:
+                itens += self.handlers[nome_regra](self, conteudo_regra)
+            else:
+                raise ValueError(f"Regra '{nome_regra}' não possui handler registrado.")
+
+        return itens
+
+
+@InputMapper.register("simples")
+def converter_simples(self, config_simples: Dict) -> list[Dict]:
+    """Converte inputs simples retornando um dicionário com o código da composição associada ao item e a quantidade orçada."""
+    itens = []
+    for nome_input, codigo_composicao in config_simples.items():
+        quantidade = getattr(self.inputs, nome_input, 0)
+        if quantidade:
+            itens.append(
+                {
+                    "codigo": codigo_composicao,
+                    "quantidade": quantidade,
+                }
+            )
+    return itens
+
+
+@InputMapper.register("redes")
+def converter_redes(self, config_redes: Dict) -> list[Dict]:
+    """Com base nas informações da rede retorna as informações das composições
+    para cada tipo de material e diâmetro.
+    """
+    itens = []
+    for rede, regras in config_redes.items():
+        qtd_trechos = getattr(self.inputs, regras["input_qtd"], 0)
+
+        for i in range(qtd_trechos):
+            diametro = getattr(self.inputs, f"{regras['input_diametro']}{i}", None)
+            comprimento = getattr(self.inputs, f"{regras['input_comprimento']}{i}", 0)
+
+            if diametro in regras["mapa_composicao"]:
+                codigo = regras["mapa_composicao"][diametro]
+                itens.append(
+                    {
+                        "codigo": codigo,
+                        "quantidade": comprimento,
+                    }
+                )
+    return itens
+
+
+InputMapper.converter_simples = converter_simples
+InputMapper.converter_redes = converter_redes
+
+
+class Precificador:
+    def __init__(
+        self, base_composicoes, precos_composicoes_insumos, composicao, estado
+    ):
+        self.df_base_composicoes = base_composicoes
+        self.df_base_precos = precos_composicoes_insumos
+        self.codigo_composicao = (
+            composicao  # Vem da conversão através de ConverterInputs
+        )
+        self.estado = estado  # Vem da ColetarInputs
 
     def buscar_composicoes_secundarias(self) -> list:
         """Retorna a lista de códigos de composições ou insumos secundários
@@ -77,7 +138,7 @@ class PrecificarComposicao:
 
     def buscar_custos_composicoes_secundarias(
         self, composicoes_secundarias: list
-    ) -> pd.DataFrame:
+    ) -> Tuple[pd.DataFrame, list]:
         """Retorna um dataframe com os custos unitários das composições secundárias
         para o estado selecionado."""
 
@@ -87,17 +148,18 @@ class PrecificarComposicao:
         )
 
         custos = []
+        warnings = []
         for composicao in composicoes_secundarias:
             try:
                 custo = df_filtrado.at[composicao, estado]
             except KeyError:
-                st.warning(
+                warnings.append(
                     f"Composição/Insumo {composicao} sem preço para {self.estado}"
                 )
                 custo = 0
             custos.append({"codigo_composicao_secundaria": composicao, "custo": custo})
 
-        return pd.DataFrame(custos)
+        return pd.DataFrame(custos), warnings
 
     def calcular_custo_unitario_composicao_primaria(
         self,
@@ -113,39 +175,123 @@ class PrecificarComposicao:
         )
         return (df["custo"] * df["coeficiente"]).sum()
 
-    def gerar_resultado(self):
-        """Adiciona o resultado ao dicionário as seguintes informações:
-        - Composição Selecionada
-        - Quantidade Orçada
-        - Custo Unitário (regionalizado)
-        - Estado considerado na precificação
-        - Custo Total
-        - Escopo
-        """
-        composicoes_secundarias = self.buscar_composicoes_secundarias()
-        custos_composicoes_secundarias = self.buscar_custos_composicoes_secundarias(
-            composicoes_secundarias
-        )
-        indices_composicoes_secundarias = self.buscar_indices_composicoes_secundarias()
+    def calcular_custo_unitario(
+        self,
+        composicoes_secundarias,
+        custos_composicoes_secundarias,
+        indices_composicoes_secundarias,
+    ):
         custo_unitario_composicao = self.calcular_custo_unitario_composicao_primaria(
             custos_composicoes_secundarias, indices_composicoes_secundarias
         )
+        return custo_unitario_composicao
 
-        custo_total_composicao = custo_unitario_composicao * self.quantidade_composicao
+    def precificar_composicao(self):
+        composicoes_secundarias = self.buscar_composicoes_secundarias()
+        custos_composicoes_secundarias, warnings = (
+            self.buscar_custos_composicoes_secundarias(composicoes_secundarias)
+        )
+        indices_composicoes_secundarias = self.buscar_indices_composicoes_secundarias()
 
-        chave = self.codigo_composicao
+        custo_unitario_composicao = self.calcular_custo_unitario(
+            composicoes_secundarias,
+            custos_composicoes_secundarias,
+            indices_composicoes_secundarias,
+        )
+        return custo_unitario_composicao, warnings
 
-        self.__class__.dicionario_resultante[chave] = {
-            "custo_unitario": float(custo_unitario_composicao),
-            "custo_total": float(custo_total_composicao),
-            "quantidade": self.quantidade_composicao,
-            "codigo_base": self.codigo_composicao,
-            "descricao": self.descricao_composicao,
-            "unidade":self.unidade,
-            "estado": self.estado,
-            "_escopo": self.escopo,
+
+class OrcamentoBuilder:
+
+    def __init__(self, session: dict):
+        self.session = session
+
+    def montar_orcamento_completo(self):
+
+        user_inputs = InputCollector(self.session)
+
+        categorias = [CONFIG_AGUA, CONFIG_ESGOTO]
+        lista_itens_orcamento = []
+        mapper = InputMapper(user_inputs)
+        for categoria in categorias:
+            lista_itens_orcamento.extend(mapper.converter_categoria(categoria))
+
+        estado = user_inputs.input_estado
+        base_composicoes = user_inputs.base_composicoes
+        precos_composicoes_insumos = user_inputs.precos_composicoes_insumos
+        lista_avisos = []
+        for item in lista_itens_orcamento:
+            codigo_composicao = item["codigo"]
+            quantidade = item["quantidade"]
+            item["custo_unitario"], warnings = Precificador(
+                base_composicoes, precos_composicoes_insumos, codigo_composicao, estado
+            ).precificar_composicao()
+
+            item["custo_total"] = quantidade * item["custo_unitario"]
+            item["descricao"] = base_composicoes.loc[
+                base_composicoes["codigo_composicao"] == codigo_composicao,
+                "descricao_da_composicao",
+            ].values[0]
+            item["unidade"] = base_composicoes.loc[
+                (base_composicoes["codigo_composicao"] == codigo_composicao)
+                & (base_composicoes["codigo_composicao_secundaria"].isna()),
+                "unidade",
+            ].values[0]
+            lista_avisos.extend(warnings)
+
+        return lista_itens_orcamento, lista_avisos
+
+
+class OrcamentoAnalyzer:
+    def __init__(self, lista_itens):
+        self.df = pd.DataFrame(lista_itens)
+        self._preparar_categoria()
+
+    def _preparar_categoria(self):
+        self.df["categoria"] = self.df["codigo"].apply(
+            lambda x: "Água" if "AGUA" in x.upper() else "Esgoto"
+        )
+
+    def get_dataframe(self):
+
+        rename_map = {
+            "codigo": "Código Composição",
+            "quantidade": "Quantidade",
+            "custo_unitario": "Custo Unitário (R$)",
+            "custo_total": "Custo Total (R$)",
+            "descricao": "Descrição Composição",
+            "unidade": "Unidade",
         }
 
-        self.__class__._processados_no_rerun[self.escopo].add(chave)
+        self.df = self.df.rename(columns=rename_map)
 
-        return self.__class__.dicionario_resultante
+        colunas_ordenadas = [
+            "Código Composição",
+            "Descrição Composição",
+            "Unidade",
+            "Quantidade",
+            "Custo Unitário (R$)",
+            "Custo Total (R$)",
+        ]
+
+        colunas_existentes = [c for c in colunas_ordenadas if c in self.df.columns]
+
+        df_formatado = self.df[colunas_existentes].copy()
+
+        if "Custo Unitário (R$)" in df_formatado:
+            df_formatado["Custo Unitário (R$)"] = (
+                df_formatado["Custo Unitário (R$)"].astype(float).round(2)
+            )
+
+        if "Custo Total (R$)" in df_formatado:
+            df_formatado["Custo Total (R$)"] = (
+                df_formatado["Custo Total (R$)"].astype(float).round(2)
+            )
+
+        return df_formatado
+
+    def obter_totais_por_categoria(self):
+        return self.df.groupby("categoria")["custo_total"].sum().reset_index()
+
+    def total_geral(self):
+        return self.df["custo_total"].sum().round(2)

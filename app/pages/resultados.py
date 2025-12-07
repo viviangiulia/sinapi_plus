@@ -1,12 +1,15 @@
 import streamlit as st
-from utils import calcular_custo_total, montar_relatorio_final, criar_relatorio_excel
-import pandas as pd
+from utils import criar_relatorio_excel
+from ProcessarComposicao import OrcamentoAnalyzer
+from utils import calcular_orcamento
 
+resultados_orcamento, avisos = calcular_orcamento(dict(st.session_state))
+df_resultados = OrcamentoAnalyzer(resultados_orcamento).get_dataframe()
 
 st.subheader("Resultados da Simulação")
 
 _, __, coluna = st.columns([3, 1, 1])
-custo_total = calcular_custo_total()
+custo_total = OrcamentoAnalyzer(resultados_orcamento).total_geral()
 with coluna:
     st.metric(
         "Total Simulado (R$)",
@@ -14,17 +17,16 @@ with coluna:
     )
 
 
-df_final = montar_relatorio_final()
 with st.container(border=True):
     st.subheader("Relatório do Orçamento")
-    st.dataframe(df_final)
+    st.dataframe(df_resultados)
 
-if not df_final.empty:
+if not df_resultados.empty:
     if st.button("Gerar Relatório Excel"):
         try:
             with st.spinner("Processando Resultados...."):
                 buffer, nome_arquivo = criar_relatorio_excel(
-                    df_final, "Relatório Orçamento"
+                    df_resultados, "Relatório Orçamento"
                 )
 
                 st.download_button(
