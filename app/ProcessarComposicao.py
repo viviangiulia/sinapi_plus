@@ -8,8 +8,7 @@ class InputCollector:
     def __init__(self, session: Dict) -> None:
 
         for key, value in session.items():
-            if key.startswith("input_"):
-                # new_key = key.replace("input_", "")
+            if key.startswith("input_"):                
                 setattr(self, key, value)
 
         self.base_composicoes = session["arquivos_base"]["base_composicoes"]
