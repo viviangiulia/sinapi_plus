@@ -1,7 +1,11 @@
 import streamlit as st
-from pricing.custos_esgoto import custo_total_esgoto
-from ProcessarComposicao import PrecificarComposicao
-from utils import calcular_custo_categoria
+from ProcessarComposicao import OrcamentoAnalyzer
+from utils import calcular_orcamento
+
+resultados_orcamento, avisos = calcular_orcamento(dict(st.session_state))
+df_custo_categoria = OrcamentoAnalyzer(
+    resultados_orcamento
+).obter_totais_por_categoria()
 
 session = st.session_state
 _, __, coluna = st.columns([3, 1, 1])
@@ -65,7 +69,7 @@ with tab2:
         with col_1:
             st.selectbox(
                 label=f"Diâmetro do Trecho {trecho + 1} (mm)",
-                options=[100,150, 200, 250, 300, 350, 400],
+                options=[100, 150, 200, 250, 300, 350, 400],
                 key=f"input_esgoto_diametro_ocre_{trecho + 1}",
             )
 
@@ -117,11 +121,11 @@ with tab3:
             key="input_esgoto_pv_max_300",
         )
 
-PrecificarComposicao.finalizar_sincronizacao(escopo)
-custo_total_esgoto(escopo)
 with coluna:
-    custo_total_escopo = calcular_custo_categoria(escopo)
+    custo_total_esgoto = df_custo_categoria.query("categoria == 'Esgoto'")[
+        "custo_total"
+    ].sum()
     st.metric(
         "Total (R$) - Esgoto Sanitário",
-        round(custo_total_escopo, 2),
+        round(custo_total_esgoto, 2),
     )

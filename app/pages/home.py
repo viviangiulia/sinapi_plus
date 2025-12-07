@@ -152,13 +152,53 @@ with col1:
     )
 
 with col2:
+
     st.markdown(
-        '<div class="sub-header">📍 Selecione seu Estado</div>', unsafe_allow_html=True
+        """
+        <style>
+        .sub-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        '<span class="sub-header">:material/globe_location_pin: Selecione seu Estado</span>',
+        unsafe_allow_html=True,
     )
 
     estados_brasil = [
-        "SP", "RJ", "MG", "RS", "PR", "SC", "BA", "DF", "GO", "ES", "PE", "CE", 
-        "PA", "MA", "MT", "MS", "PB", "AL", "SE", "RN", "RO", "TO", "AC", "AM", "AP", "RR", "PI"
+        "SP",
+        "RJ",
+        "MG",
+        "RS",
+        "PR",
+        "SC",
+        "BA",
+        "DF",
+        "GO",
+        "ES",
+        "PE",
+        "CE",
+        "PA",
+        "MA",
+        "MT",
+        "MS",
+        "PB",
+        "AL",
+        "SE",
+        "RN",
+        "RO",
+        "TO",
+        "AC",
+        "AM",
+        "AP",
+        "RR",
+        "PI",
     ]
 
     estado_selecionado = st.selectbox(
@@ -184,7 +224,36 @@ col3, col4 = st.columns(2)
 
 with col3:
     st.markdown(
-        '<div class="sub-header">🚀 Como Funciona?</div>', unsafe_allow_html=True
+        """
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 22px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .sub-header {
+            font-size: 20px;
+            font-weight: 600;
+        }
+    </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div class="sub-header">
+            <span class="material-symbols-outlined">menu_book</span>
+            Instruções
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
     st.markdown(
@@ -204,7 +273,36 @@ with col3:
 
 with col4:
     st.markdown(
-        '<div class="sub-header">ℹ️ Informações Úteis</div>', unsafe_allow_html=True
+        """
+        <link rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+        <style>
+            .material-symbols-outlined {
+                font-family: 'Material Symbols Outlined';
+                font-weight: normal;
+                font-style: normal;
+                font-size: 22px;
+                display: inline-block;
+                vertical-align: middle;
+            }
+            .sub-header {
+                font-size: 20px;
+                font-weight: 600;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div class="sub-header">
+            <span class="material-symbols-outlined">info</span>
+            Informações Úteis
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
     st.markdown(

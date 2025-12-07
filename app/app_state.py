@@ -27,7 +27,7 @@ def initial_session_state():
 def persist_state():
     """Mantém os valores dos widgets salvos no session_state em todas as páginas."""
 
-    persistent_keys = [
+    base_keys = [
         "loaded_data",
         "input_estado",
         "input_agua_ligacao_predial",
@@ -35,7 +35,7 @@ def persist_state():
         "input_agua_qtd_trechos_pba",
         "input_agua_diametro_pba_#",
         "input_agua_comprimento_pba_#",
-        "input_agua_qtd_trechos_defofo_#",
+        "input_agua_qtd_trechos_defofo",
         "input_agua_diametro_defofo_#",
         "input_agua_comprimento_defofo_#",
         "input_esgoto_qtd_ligacao_4m",
@@ -49,11 +49,15 @@ def persist_state():
         "input_esgoto_pv_max_300",
     ]
 
-    for key in persistent_keys:
-        if key.endswith("#"):
-            padrao = r"#"
-            persistent_keys.extend([re.sub(padrao, str(i), key) for i in range(1, 11)])
-            persistent_keys.remove(key)
-            
+    # Expansão das chaves com "#"
+    expanded_keys = []
+    for key in base_keys:
+        if key.endswith("_#"):
+            prefix = key[:-1]  # remove o "#"
+            expanded_keys.extend([f"{prefix}{i}" for i in range(1, 11)])
+        else:
+            expanded_keys.append(key)
+
+    for key in expanded_keys:
         if key in st.session_state:
             st.session_state[key] = st.session_state[key]
