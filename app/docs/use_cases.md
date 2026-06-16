@@ -54,7 +54,7 @@ Tentativas de criação de trechos com comprimento inferior a zero devem resulta
 ---
 
 ## Fluxo de Orçamentação
-
+```bash
 Rede
 ↓
 Trechos de Rede
@@ -66,14 +66,18 @@ Quantitativos Consolidados
 Geração de Itens Orçamentários
 ↓
 Orçamento
-
+```
 ---
 
 ## Questões em Aberto
 
-* Água, Esgoto e Drenagem possuem comportamentos distintos ou apenas catálogos de composições distintos?
-* Uma Rede pode conter múltiplos materiais e diâmetros? (Hipótese atual: sim)
-* A seleção da composição deve ser responsabilidade da Tubulação ou de um serviço de domínio específico?
+* Uma especificação orçamentária é identificada por:
+
+  - Tipo de Rede?
+  - Categoria?
+  - Atributos Técnicos?
+
+Ou existe um conceito único que encapsula tudo isso?
 
 
 
