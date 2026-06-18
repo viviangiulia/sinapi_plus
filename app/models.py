@@ -75,3 +75,41 @@ class Rede:
             )
 
         return lista_elementos
+
+class TipoItem(Enum):
+    INSUMO = "Insumo"
+    COMPOSICAO = "Composição"
+
+@dataclass
+class ItemCatalogo:
+    codigo: str
+    descricao: str
+    tipo:TipoItem
+
+    def __post_init__(self):
+        if not self.codigo:
+            raise ValueError(""
+            "Um Item do Catálogo não pode ter código vazio.")
+
+@dataclass
+class ComponenteComposicao:
+    item: ItemCatalogo
+    coeficiente: float
+
+    def __post_init__(self):
+        if self.coeficiente < 0:
+            raise ValueError(
+                "Coeficiente não pode ser negativo."
+            )
+
+@dataclass
+class Composicao:
+    codigo: str
+    descricao: str
+    items: List[ComponenteComposicao]
+
+    def __post_init__(self):
+        if not self.items:
+            raise ValueError(
+                "Composição precisa obrigatoriamente de ter itens associados."
+            )
