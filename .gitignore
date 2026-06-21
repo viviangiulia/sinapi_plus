@@ -53,3 +53,6 @@ logs/
 # Arquivos temporários
 temp/
 tmp/
+
+# Temporary study notes
+study/
