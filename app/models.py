@@ -29,6 +29,10 @@ class ComposicaoQuantificada:
     codigo_composicao: str
     quantidade: float
 
+    def __post_init__(self):
+        if self.quantidade < 0:
+            raise ValueError("Quantidade não pode ser negativa.")
+
 
 @dataclass(frozen=True)
 class Especificacao:
@@ -42,6 +46,10 @@ class ElementoQuantificavel:
     categoria: str
     quantidade: float
     especificacao: Especificacao
+
+    def __post_init__(self):
+        if self.quantidade < 0:
+            raise ValueError("Quantidade não pode ser negativa.")
 
 
 class Rede:
@@ -113,3 +121,50 @@ class Composicao:
             raise ValueError(
                 "Composição precisa obrigatoriamente de ter itens associados."
             )
+        
+
+@dataclass(frozen=True)
+class Estado:
+    sigla: str
+
+@dataclass
+class PrecoItemCatalogo:
+    item: ItemCatalogo
+    estado: Estado
+    preco_unitario: float
+
+    def __post_init__(self):
+        if self.preco_unitario < 0:
+            raise ValueError("Preço não pode ser negativo.")
+        
+
+
+@dataclass
+class ComponentePrecificado:
+    componente: ComponenteComposicao
+    preco_unitario: float
+
+    @property
+    def custo_unitario(self):
+        return (
+            self.componente.coeficiente
+            * self.preco_unitario
+        )
+    
+@dataclass
+class ComposicaoPrecificada:
+    codigo: str
+    estado: Estado
+    quantidade: float
+    componentes: List[ComponentePrecificado]
+
+    @property
+    def custo_unitario(self):
+        return sum(
+            componente.custo_unitario
+            for componente in self.componentes
+        )
+
+    @property
+    def custo_total(self):
+        return self.custo_unitario * self.quantidade
