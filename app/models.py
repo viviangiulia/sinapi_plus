@@ -168,3 +168,12 @@ class ComposicaoPrecificada:
     @property
     def custo_total(self):
         return self.custo_unitario * self.quantidade
+    
+@dataclass
+class Orcamento:
+    id: str
+    itens: List[ComposicaoPrecificada]
+
+    @property
+    def custo_total(self):
+        return sum(item.custo_total for item in self.itens)
