@@ -1,8 +1,8 @@
 import pandas as pd
 import streamlit as st
 from typing import Dict, Tuple
-from configs.config_agua import CONFIG_AGUA
-from configs.config_esgoto import CONFIG_ESGOTO
+from app.configs.config_agua import CONFIG_AGUA
+from app.configs.config_esgoto import CONFIG_ESGOTO
 
 class InputCollector:
     def __init__(self, session: Dict) -> None:

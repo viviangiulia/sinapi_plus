@@ -56,3 +56,6 @@ tmp/
 
 # Temporary study notes
 study/
+
+.env
+*.db

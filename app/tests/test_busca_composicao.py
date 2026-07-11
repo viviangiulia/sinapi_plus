@@ -1,4 +1,4 @@
-from models import ComposicaoQuantificada, ElementoQuantificavel, Especificacao
+from app.models import ComposicaoQuantificada, ElementoQuantificavel, Especificacao
 from typing import Dict
 from dataclasses import dataclass
 

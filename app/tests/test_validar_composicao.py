@@ -1,5 +1,5 @@
 import pytest
-from models import ComponenteComposicao, ItemCatalogo, TipoItem,Composicao
+from app.models import ComponenteComposicao, ItemCatalogo, TipoItem,Composicao
 
 
 def test_coeficiente_nao_pode_ser_negativo():

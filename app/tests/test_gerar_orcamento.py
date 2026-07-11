@@ -1,5 +1,5 @@
-from orcamento_service import gerar_orcamento
-from models import ElementoQuantificavel,Especificacao, Orcamento,Estado
+from app.orcamento_service import gerar_orcamento
+from app.models import ElementoQuantificavel,Especificacao, Orcamento,Estado
 import random
 
 class ElementosFake:

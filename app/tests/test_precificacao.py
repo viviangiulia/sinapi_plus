@@ -1,4 +1,4 @@
-from models import PrecoItemCatalogo, ItemCatalogo, TipoItem, Estado
+from app.models import PrecoItemCatalogo, ItemCatalogo, TipoItem, Estado
 from typing import Dict
 from dataclasses import dataclass
 import pytest

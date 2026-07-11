@@ -1,5 +1,5 @@
-from data_loading import get_database
-from models import ElementoQuantificavel,ComposicaoQuantificada
+from app.data_loading import get_database
+from app.models import ElementoQuantificavel,ComposicaoQuantificada
 
 
 class CatalogoRepository:

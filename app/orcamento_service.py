@@ -1,14 +1,17 @@
-from models import (
+from app.models import (
     ElementoQuantificavel,
     Estado,
     Orcamento,
     ComposicaoPrecificada,
     ComponentePrecificado,
 )
-from repositories.composicao_repository import ComposicaoRepository
-from repositories.preco_repository import PrecoRepository
-from repositories.catalogo_repository import CatalogoRepository
+from app.repositories.composicao_repository import ComposicaoRepository
+from app.repositories.preco_repository import PrecoRepository
+from app.repositories.catalogo_repository import CatalogoRepository
+from app.repositories.orcamento_repository import OrcamentoRepository
 import uuid
+from app.infrastructure.database.engine import engine
+from sqlalchemy.orm import Session
 
 
 def gerar_orcamento(
@@ -52,3 +55,26 @@ def gerar_orcamento(
         itens_orcamento.append(composicao_precificada)
 
     return Orcamento(id=str(uuid.uuid4()), itens=itens_orcamento)
+
+
+def salvar_orcamento(orcamento: Orcamento) -> None:
+
+    with Session(engine) as session:
+
+        repository = OrcamentoRepository(session)
+
+        try:
+            repository.salvar_orcamento(orcamento)
+            session.commit()
+            print("Orçamento salvo com sucesso!")
+
+        except Exception:
+            session.rollback()
+            raise
+
+
+def consultar_orcamento_salvo(id: str) -> Orcamento:
+    with Session(engine) as session:
+        repository = OrcamentoRepository(session)
+
+        return repository.buscar_orcamento(id)

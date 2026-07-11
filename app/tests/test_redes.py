@@ -1,5 +1,5 @@
 import pytest
-from models import Rede, TrechoRede, Tubulacao
+from app.models import Rede, TrechoRede, Tubulacao
 
 
 def test_consolidar_comprimentos_por_tubulacao():

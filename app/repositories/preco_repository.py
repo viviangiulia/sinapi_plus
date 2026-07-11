@@ -1,6 +1,6 @@
 # Converte os dados persistidos em uma instância de PrecoItemCatalogoo
-from data_loading import get_database
-from models import PrecoItemCatalogo, ItemCatalogo, TipoItem, Estado
+from app.data_loading import get_database
+from app.models import PrecoItemCatalogo, ItemCatalogo, TipoItem, Estado
 
 
 class PrecoRepository:
