@@ -1,4 +1,4 @@
-from ProcessarComposicao import OrcamentoBuilder
+from app.ProcessarComposicao import OrcamentoBuilder
 import pandas as pd
 from io import BytesIO
 import datetime

@@ -1,177 +1,586 @@
-# SINAPI+ 
+# SINAPI+
+
 ## Simulador de Custos de Infraestrutura
-[![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-plastic&logo=Streamlit&logoColor=white)](https://streamlit.io/) [![Python](https://img.shields.io/badge/Python-3776AB?style=for-plastic&logo=python&logoColor=white)](https://www.python.org/) [![Pandas](https://img.shields.io/badge/Pandas-2C2D72?style=for-plastic&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
 
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Pytest](https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)
 
+O **SINAPI+** é uma aplicação para geração e análise de orçamentos de infraestrutura da construção civil, utilizando composições e preços regionalizados de referência do **SINAPI — Sistema Nacional de Pesquisa de Custos e Índices da Construção Civil**.
 
-## 🔍 **Sobre o Projeto**
-O SINAPI+ é uma aplicação web desenvolvida em Python/Streamlit que simula custos de projetos de infraestrutura com base nas composições e insumos do SINAPI (Sistema Nacional de Pesquisa de Custos e Índices da Construção Civil) da Caixa Econômica Federal.
+Além de seu objetivo funcional, o projeto é desenvolvido como um **projeto de portfólio e laboratório de arquitetura de software**, explorando modelagem de domínio, separação de responsabilidades, padrões de projeto, persistência, APIs e desenvolvimento full stack.
 
-A aplicação permite criar orçamentos detalhados para diferentes categorias de infraestrutura, com preços regionalizados para todos os estados brasileiros.
+> **Status do projeto:** o SINAPI+ está atualmente passando por uma reconstrução arquitetural e pela migração de sua interface original em Streamlit para uma arquitetura desacoplada, com backend Python e frontend React.
 
-![alt text](app/images/home_page.png)
+---
 
-![alt text](app/images/preenchimento1.png)
+## 🔍 Sobre o projeto
 
-![alt text](app/images/resultados.png)
+O orçamento de infraestrutura envolve a transformação de elementos reais de uma obra — como tubulações, hidrômetros, poços de visita e outros serviços — em composições de custos formadas por materiais, mão de obra e equipamentos.
 
-## 🚀 **Funcionalidades Principais**
+O SINAPI+ busca simplificar esse processo por meio de um fluxo estruturado:
 
-**Simulação de Custos**
+```text
+Dados de entrada
+        ↓
+ElementoQuantificavel
+        ↓
+CatalogoRepository
+        ↓
+ComposicaoQuantificada
+        ↓
+ComposicaoRepository
+        ↓
+Composicao
+        ↓
+PrecoRepository
+        ↓
+ComponentePrecificado
+        ↓
+ComposicaoPrecificada
+        ↓
+Orcamento
+```
 
-- Seleção de Itens: Escolha entre composições pré-definidas de infraestrutura.
+A aplicação associa as características técnicas de cada elemento a uma composição correspondente, consulta seus componentes, aplica preços regionalizados e consolida os resultados em um orçamento.
 
-- Quantificação Flexível: Defina quantidades personalizadas para cada item.
+Um dos principais objetivos arquiteturais é manter as **regras de negócio independentes da interface, do banco de dados e dos frameworks utilizados**, permitindo que o domínio evolua sem ficar acoplado à infraestrutura.
 
-- Especificação Detalhada: Ajuste parâmetros técnicos conforme necessidade.
+---
 
-**Regionalização de Preços**
+## 🎯 Objetivos técnicos
 
-- Abrangência Nacional: Preços específicos para todos os 27 estados brasileiros.
+O projeto também funciona como um ambiente prático para estudo e aplicação de conceitos de engenharia de software:
 
-- Atualização Automática: Baseado nos dados oficiais mais recentes do SINAPI.
+- Domain Modeling;
+- Clean Code;
+- princípios SOLID;
+- separação entre domínio, aplicação e infraestrutura;
+- Repository Pattern;
+- Service Layer;
+- Dependency Inversion Principle;
+- Design Patterns aplicados a problemas reais;
+- testes unitários e de integração;
+- persistência com SQLAlchemy;
+- API REST com FastAPI e Pydantic;
+- frontend em React;
+- AIDD — AI-Driven Development — como apoio ao desenvolvimento do frontend;
+- documentação de decisões arquiteturais através de ADRs.
 
-- Comparação Regional: Analise variações de custo entre diferentes estados.
+As decisões são introduzidas incrementalmente conforme surgem necessidades reais no domínio, evitando adicionar abstrações ou padrões sem uma responsabilidade concreta.
 
-**Categorias Implementadas**
+---
 
-- Água Potável: Ligações prediais, redes de distribuição, hidrômetros.
+## 🏗️ Arquitetura
 
-- Esgoto Sanitário: Redes coletoras, poços de visita, ligações prediais.
+A arquitetura pretendida para a nova versão do SINAPI+ é:
 
-Em expansão: Pavimentação, Drenagem, Energia
+```text
+┌──────────────────────────┐
+│          React           │
+│        Frontend          │
+└────────────┬─────────────┘
+             │ HTTP / JSON
+             ▼
+┌──────────────────────────┐
+│   FastAPI + Pydantic     │
+│      API / Schemas       │
+└────────────┬─────────────┘
+             ▼
+┌──────────────────────────┐
+│     Application Layer    │
+│  Service Layer / Use     │
+│          Cases           │
+└────────────┬─────────────┘
+             ▼
+┌──────────────────────────┐
+│       Domain Model       │
+│   Regras e entidades     │
+│       de negócio         │
+└────────────┬─────────────┘
+             ▼
+┌──────────────────────────┐
+│       Repositories       │
+│  Abstração de acesso a   │
+│          dados           │
+└────────────┬─────────────┘
+             ▼
+┌──────────────────────────┐
+│       SQLAlchemy         │
+│      Persistência        │
+└────────────┬─────────────┘
+             ▼
+┌──────────────────────────┐
+│      Banco de Dados      │
+└──────────────────────────┘
+```
 
-## 🛠️ Tecnologias Utilizadas
+Uma das principais diretrizes arquiteturais do projeto é que o **domínio não dependa da API, do ORM ou da interface gráfica**.
 
-| Tecnologia | Versão | Finalidade | Badge |
-|------------|--------|------------|-------|
-| **Python** | 3.9+ | Linguagem principal | ![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python) |
-| **Streamlit** | 1.28+ | Framework web e interface | ![Streamlit](https://img.shields.io/badge/Streamlit-1.28%2B-FF4B4B?logo=streamlit) |
-| **Pandas** | 2.0+ | Manipulação e análise de dados | ![Pandas](https://img.shields.io/badge/Pandas-2.0%2B-150458?logo=pandas) |
-| **OpenPyXL** | 3.1+ | Leitura de planilhas Excel | ![OpenPyXL](https://img.shields.io/badge/OpenPyXL-3.1%2B-217346) |
+A direção das dependências busca manter as regras de negócio no centro da aplicação:
 
-## 📁 Estrutura do Projeto
+```text
+Interface ──────────┐
+                    ▼
+API ──────► Application Layer ──────► Domain Model
+                    │
+                    ▼
+               Repositories
+                    │
+                    ▼
+               Infrastructure
+```
+
+---
+
+## 📊 Status atual
+
+### ✅ Implementado
+
+- Modelagem inicial do domínio de orçamentos;
+- representação de elementos quantificáveis e suas especificações;
+- modelagem de redes, trechos e tubulações;
+- geração de elementos quantificáveis a partir de objetos do domínio;
+- associação entre elementos e códigos de composição através de catálogo;
+- consulta das composições e seus componentes;
+- precificação regionalizada dos componentes;
+- geração do agregado `Orcamento`;
+- Repository Pattern para acesso às diferentes fontes de dados;
+- Service Layer para orquestração dos casos de uso;
+- persistência inicial com SQLAlchemy e SQLite;
+- separação entre modelos de domínio e modelos ORM;
+- `OrcamentoRepository` para persistência e consulta inicial de orçamentos;
+- configuração da conexão com o banco através de variáveis de ambiente;
+- testes automatizados do domínio, repositories e serviços;
+- documentação de decisões arquiteturais através de ADRs.
+
+### 🚧 Em desenvolvimento
+
+- persistência completa do agregado `Orcamento`;
+- modelagem ORM das composições precificadas;
+- modelagem ORM dos componentes precificados;
+- reconstrução completa de um orçamento a partir da persistência;
+- testes de integração da camada de persistência;
+- frontend em React, desenvolvido inicialmente com dados mockados.
+
+### 🗺️ Planejado
+
+- estratégia completa de snapshot histórico dos orçamentos;
+- migrações de banco de dados;
+- relatórios e exportações;
+- API REST com FastAPI;
+- contratos de entrada e saída com Pydantic;
+- integração entre React e FastAPI;
+- consulta de orçamentos salvos pelo frontend;
+- deploy do MVP;
+- pipeline básico de integração contínua.
+
+---
+
+## 🚀 Funcionalidades
+
+### Geração de orçamentos
+
+A aplicação permite transformar elementos de infraestrutura em composições precificadas através do seguinte processo:
+
+1. Recebimento dos elementos quantificáveis;
+2. identificação da composição correspondente através do catálogo;
+3. consulta dos dados e componentes da composição;
+4. consulta dos preços regionalizados;
+5. precificação de cada componente;
+6. consolidação em uma composição precificada;
+7. geração do orçamento completo.
+
+### Regionalização de preços
+
+Os preços são associados ao estado utilizado como referência para o orçamento, permitindo trabalhar com diferentes contextos regionais brasileiros.
+
+### Categorias atualmente modeladas
+
+#### Água potável
+
+- tubulações;
+- hidrômetros;
+- outros elementos relacionados à infraestrutura de abastecimento.
+
+#### Esgoto sanitário
+
+- tubulações;
+- poços de visita;
+- outros elementos relacionados à infraestrutura sanitária.
+
+Categorias como drenagem, pavimentação e energia poderão ser incorporadas futuramente conforme a evolução do domínio.
+
+---
+
+## 🛠️ Stack tecnológica
+
+| Tecnologia | Finalidade | Status |
+|---|---|---|
+| **Python** | Linguagem principal do backend e domínio | Implementado |
+| **Pandas** | Consulta e transformação das bases de referência atuais | Implementado |
+| **OpenPyXL** | Leitura das bases em Excel | Implementado |
+| **SQLAlchemy** | ORM e persistência | Implementado |
+| **SQLite** | Banco de dados durante o desenvolvimento inicial | Implementado |
+| **Pytest** | Testes automatizados | Implementado |
+| **React** | Novo frontend da aplicação | Em desenvolvimento |
+| **JavaScript** | Linguagem do frontend | Em desenvolvimento |
+| **FastAPI** | API REST | Planejado |
+| **Pydantic** | Contratos e validação na fronteira da API | Planejado |
+| **Alembic** | Migrações do banco de dados | Planejado |
+
+---
+
+## 🤖 Desenvolvimento do frontend com AIDD
+
+O novo frontend em React é desenvolvido com apoio de uma abordagem de **AI-Driven Development (AIDD)**.
+
+A IA é utilizada como ferramenta de apoio para acelerar atividades como:
+
+- exploração de alternativas visuais;
+- geração inicial de componentes;
+- refinamento da interface;
+- identificação de padrões reutilizáveis;
+- apoio à implementação e refatoração.
+
+O uso de AIDD não substitui as decisões arquiteturais do projeto. O frontend continua sendo desenvolvido considerando separação de responsabilidades, componentes reutilizáveis e uma fronteira explícita entre interface e backend.
+
+Inicialmente, o frontend pode operar com dados mockados. Posteriormente, esses mocks serão substituídos progressivamente pelos contratos reais da API FastAPI.
+
+---
+
+## 🧪 Testes
+
+O projeto utiliza `pytest` para validar o comportamento do domínio, dos repositories e dos casos de uso.
+
+Os testes buscam verificar regras e comportamentos observáveis, evitando acoplamento excessivo aos detalhes internos de implementação.
+
+Para executar a suíte:
 
 ```bash
-sinapi+/
-├── 📂 app/
-│   ├── main.py                       # Inicialização multipage do Streamlit
-│   ├── app_state.py                  # Persistência de estado (session_state)
-│   ├── data_loading.py               # Cache e carregamento das bases (.xlsx)
-│   ├── utils.py                      # Funções auxiliares gerais
+python -m pytest
+```
+
+Entre os cenários atualmente cobertos estão:
+
+- validação de objetos do domínio;
+- geração de elementos quantificáveis;
+- busca de composições;
+- precificação;
+- geração de orçamento;
+- conversão inicial entre objetos de domínio e modelos ORM.
+
+A evolução planejada inclui testes de integração para validar o ciclo completo:
+
+```text
+Criar Orcamento
+        ↓
+Persistir
+        ↓
+Commit
+        ↓
+Recuperar
+        ↓
+Reconstruir agregado
+        ↓
+Comparar resultado
+```
+
+---
+
+## 🗺️ Roadmap
+
+O desenvolvimento do SINAPI+ está organizado em cinco milestones:
+
+### M1 — Fundação da Persistência
+
+Persistência e reconstrução completa do agregado `Orcamento`.
+
+Principais objetivos:
+
+- definir a estratégia de snapshot histórico;
+- persistir as composições precificadas;
+- persistir os componentes precificados;
+- reconstruir o agregado completo;
+- implementar testes de integração;
+- introduzir migrações do banco de dados.
+
+### M2 — Relatórios e Exportação
+
+Definição e implementação dos primeiros relatórios disponibilizados pela aplicação.
+
+Principais objetivos:
+
+- definir os requisitos dos relatórios;
+- selecionar os relatórios necessários para o MVP;
+- implementar a primeira exportação.
+
+### M3 — Fundação da API
+
+Exposição dos casos de uso através de FastAPI e contratos Pydantic.
+
+Principais objetivos:
+
+- definir os contratos HTTP;
+- estruturar a aplicação FastAPI;
+- expor o caso de uso de geração de orçamento;
+- disponibilizar operações de persistência e consulta.
+
+### M4 — Frontend React e Integração
+
+Desenvolvimento da experiência de usuário e integração progressiva com o backend.
+
+Principais objetivos:
+
+- desenvolver a interface inicialmente com dados mockados;
+- implementar formulários de entrada;
+- apresentar os resultados do orçamento;
+- tratar estados de carregamento, erro e ausência de dados;
+- substituir progressivamente os mocks pela API real.
+
+### M5 — MVP e Deploy
+
+Preparação da primeira versão completa e publicamente demonstrável.
+
+Principais objetivos:
+
+- preparar frontend e backend para produção;
+- definir a estratégia de banco de dados de produção;
+- configurar variáveis de ambiente;
+- documentar a execução da aplicação;
+- implementar integração contínua;
+- realizar o deploy do fluxo principal.
+
+O roadmap detalhado, as prioridades, os critérios de aceite e o andamento das implementações são acompanhados através do GitHub Project associado ao repositório.
+
+---
+
+## 📝 Decisões arquiteturais
+
+As principais decisões técnicas do projeto são documentadas através de **Architecture Decision Records (ADRs)**.
+
+Entre os temas explorados estão:
+
+- modelagem do domínio;
+- separação entre regras de negócio e infraestrutura;
+- utilização do Repository Pattern;
+- Service Layer e orquestração de casos de uso;
+- persistência e reconstrução de agregados;
+- evolução das fontes de dados;
+- estratégia de snapshot histórico dos orçamentos.
+
+Essa documentação busca preservar não apenas **o que foi implementado**, mas também **por que determinadas decisões foram tomadas**.
+
+---
+
+## 📁 Estrutura do projeto
+
+A estrutura atual do backend reflete a evolução incremental do SINAPI+, desde sua primeira versão em Streamlit até a nova arquitetura orientada ao domínio.
+
+```text
+sinapi_plus/
+├── app/
+│   ├── api/                       # Camada da API e futuros endpoints FastAPI
+│   ├── configs/                   # Configurações da aplicação
+│   ├── docs/                      # Documentação técnica e ADRs
+│   ├── excel_files/               # Bases de referência utilizadas atualmente
+│   ├── images/                    # Recursos visuais da aplicação legada
+│   ├── infrastructure/            # Persistência, ORM e configuração do banco
+│   ├── pages/                     # Páginas da interface Streamlit legada
+│   ├── repositories/              # Acesso e abstração das fontes de dados
+│   ├── streamlit/                 # Componentes relacionados à aplicação legada
+│   ├── study/                     # Experimentos e exercícios de estudo
+│   ├── tests/                     # Testes automatizados
 │   │
-│   ├── 📂 pages/
-│   │   ├── home.py                   # Página inicial
-│   │   ├── sinapi_agua_potavel.py    # Interface para inputs de Água
-│   │   ├── sinapi_esgoto.py          # Interface para inputs de Esgoto
-│   │   └── resultados.py             # Exibição do orçamento, totais e avisos
-│   │
-│   ├── 📂 configs/
-│   │   ├── config_agua.py            # CONFIG_AGUA
-│   │   └── config_esgoto.py          # CONFIG_ESGOTO
-│   │
-│   ├── 📂 excel_files/
-│   │   ├── base_composicoes.xlsx
-│   │   └── precos_composicoes_insumos.xlsx
-│   │
-│   └── 📂 images/
-├── ProcessarComposicao.py               # TODAS AS CLASSES DO MOTOR DE CÁLCULO
-│                                        # (InputCollector, InputMapper,
-│                                        #  OrcamentoBuilder, Precificador,
-│                                        #  OrcamentoAnalyzer)
+│   ├── app_state.py               # Gerenciamento de estado da aplicação legada
+│   ├── create_database.py         # Inicialização do banco de dados
+│   ├── data_loading.py            # Carregamento das bases de referência
+│   ├── exceptions.py              # Exceções específicas da aplicação
+│   ├── main.py                    # Ponto de entrada da aplicação legada
+│   ├── models.py                  # Modelo de domínio
+│   ├── orcamento_service.py       # Service Layer e casos de uso de orçamento
+│   ├── ProcessarComposicao.py     # Implementação legada do motor de cálculo
+│   └── utils.py                   # Funções auxiliares
 │
 ├── requirements.txt
+├── .env.example
 └── README.md
 ```
 
+O novo backend está sendo desenvolvido incrementalmente, preservando temporariamente partes da implementação anterior em Streamlit para referência e comparação durante a migração.
 
-## Como Utilizar
-**1. Seleção de Categoria**
-- Selecione o Estado desejado na página Home.
-- Navegue entre as páginas: Água Potável ou Esgoto Sanitário.
-- Cada categoria possui composições específicas disponíveis separadas por abas de acordo com o item a ser orçado.
+A arquitetura atual separa conceitualmente as seguintes responsabilidades:
 
-**2. Simulação e Resultados**
-- Custo Unitário: Preço por unidade para o estado selecionado.
+```text
+models.py
+    ↓
+Modelo de domínio e regras de negócio
 
-- Custo Total: Valor total baseado na quantidade especificada.
+orcamento_service.py
+    ↓
+Service Layer e orquestração dos casos de uso
 
-- Detalhamento: Breakdown por componentes e insumos.
+repositories/
+    ↓
+Abstração do acesso às fontes de dados
 
-3. Análise Comparativa
-Compare custos entre diferentes estados e exporte resultados para análise.
+infrastructure/
+    ↓
+SQLAlchemy, modelos ORM e configuração do banco de dados
 
+api/
+    ↓
+Futura fronteira HTTP com FastAPI e Pydantic
 
-## 🔧 Instalação e Execução
-**Pré-requisitos**
-- Python 3.9 ou superior
-- Git
+tests/
+    ↓
+Testes do domínio, repositories, serviços e persistência
+```
 
-**Passo a Passo:**
+A organização física do projeto poderá evoluir conforme o domínio e a aplicação crescerem. Por enquanto, o modelo de domínio permanece concentrado em `models.py`, evitando uma fragmentação prematura em múltiplos módulos sem necessidade concreta.
 
-**1. Clone o repositório**
-```python
+---
+
+## 🔧 Instalação e execução
+
+### Pré-requisitos
+
+- Python compatível com a versão definida pelo projeto;
+- Git.
+
+### 1. Clone o repositório
+
+```bash
 git clone https://github.com/viviangiulia/sinapi_plus.git
 ```
 
-**2. Acesse o diretório**
-```python
-cd sinapi+
+### 2. Acesse o diretório
+
+```bash
+cd sinapi_plus
 ```
 
-**3. Crie um ambiente virtual**
-```python
+### 3. Crie um ambiente virtual
+
+```bash
 python -m venv venv
 ```
 
-**4. Ative o ambiente virtual**
- - Windows:
-    ```python
-    venv\Scripts\activate
-    ```
- - Linux/Mac:
-    ```python
-    source venv/bin/activate
-    ```
-**5. Instale as dependências**
-```python
+### 4. Ative o ambiente virtual
+
+#### Windows
+
+```bash
+venv\Scripts\activate
+```
+
+#### Linux ou macOS
+
+```bash
+source venv/bin/activate
+```
+
+### 5. Instale as dependências
+
+```bash
 pip install -r requirements.txt
 ```
-**6. Execute a aplicação**
-```python
-streamlit run app/main.py
+
+### 6. Configure as variáveis de ambiente
+
+Crie um arquivo `.env` a partir do `.env.example` disponibilizado no projeto.
+
+Linux ou macOS:
+
+```bash
+cp .env.example .env
 ```
 
-## 📈 Fontes de Dados
-[SINAPI/Caixa Econômica Federal:](https://www.caixa.gov.br/) Dados oficiais de composições e insumos.
+No Windows, o arquivo também pode ser copiado manualmente.
 
-    - Atualização Mensal: Valores revisados mensalmente conforme calendário oficial
+### 7. Execute os testes
 
-    - Abrangência Nacional: Cobertura completa de todos os estados brasileiros
+```bash
+python -m pytest
+```
+
+> Os comandos de execução da API FastAPI e do novo frontend React serão adicionados conforme essas etapas forem integradas à versão principal do projeto.
+
+---
+
+## 📈 Fontes de dados
+
+O projeto utiliza dados públicos de referência do **SINAPI — Sistema Nacional de Pesquisa de Custos e Índices da Construção Civil**.
+
+Os dados incluem informações relacionadas a:
+
+- composições;
+- insumos;
+- coeficientes;
+- preços regionalizados.
+
+As fontes de dados atuais ainda utilizam arquivos Excel em parte da infraestrutura. A arquitetura com repositories busca isolar essa decisão das regras de negócio, permitindo a evolução futura das fontes de dados sem modificar o domínio.
+
+---
+
+## 🕰️ Histórico da aplicação
+
+A primeira versão funcional do SINAPI+ foi desenvolvida com Streamlit e serviu como prova de conceito para validar o problema e o fluxo de geração de orçamentos.
+
+A aplicação está sendo reconstruída para uma arquitetura desacoplada:
+
+```text
+Versão inicial
+Streamlit + Pandas + Excel
+            ↓
+Nova arquitetura
+React + FastAPI + Domain Model + Repositories + SQLAlchemy
+```
+
+A versão anterior permanece como parte do histórico de evolução do projeto.
+
+---
 
 ## 🤝 Contribuição
-Contribuições são bem-vindas! 
 
-Áreas de melhoria:
+O projeto está atualmente em desenvolvimento ativo e é utilizado principalmente para fins de estudo, portfólio e experimentação arquitetural.
 
-- Implementar novas categorias (pavimentação, drenagem)
+Sugestões e discussões técnicas são bem-vindas, especialmente relacionadas a:
 
-- Desenvolver análises preditivas
+- modelagem de domínio;
+- arquitetura de software;
+- construção civil e orçamentação;
+- persistência;
+- APIs;
+- testes;
+- experiência de usuário.
 
-- Criar dashboard comparativo histórico
+---
 
-## 📄 Licença
-Este projeto é destinado para fins educacionais e de portfólio. Os dados do SINAPI são de domínio público, disponibilizados pela Caixa Econômica Federal.
+## 📄 Licença e uso dos dados
+
+Este projeto é desenvolvido para fins educacionais e de portfólio.
+
+Os dados públicos utilizados como referência permanecem sujeitos às condições e regras aplicáveis às respectivas fontes oficiais.
+
+---
 
 ## 👩‍💻 Autora
+
 **Vivian Giulia Fernandes**
 
-Engenheira Civil formada pela Universidade Federal de Minas Gerais descobrindo como solucionar problemas e otimizar processos através da programação.
+Engenheira Civil formada pela Universidade Federal de Minas Gerais, desenvolvendo soluções de software para problemas reais da construção civil e aprofundando conhecimentos em desenvolvimento backend, arquitetura de software e Python.
 
-[![Linkedin](https://img.shields.io/badge/LinkedIn-0077B5?style=for-plastic&logo=linkedin&logoColor=white )](https://www.linkedin.com/in/vivian-fernandes-099b34149/) [![Github](https://img.shields.io/badge/GitHub-100000?style=for-plastic&logo=github&logoColor=white)](https://github.com/viviangiulia)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/vivian-fernandes-099b34149/)
 
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/viviangiulia)
 
+---
 
+## ⚠️ Disclaimer
 
-**⚠️ Disclaimer:**
- Este projeto não possui vínculo oficial com a Caixa Econômica Federal. Os dados do SINAPI são utilizados conforme disponibilização pública para fins educacionais e de demonstração técnica.
+Este projeto não possui vínculo oficial com a Caixa Econômica Federal ou com os responsáveis oficiais pelo SINAPI.
+
+Os dados de referência são utilizados conforme sua disponibilização pública para fins educacionais, de estudo e de demonstração técnica.

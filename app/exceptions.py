@@ -1,0 +1,3 @@
+
+class OrcamentoNaoEncontradoError(Exception):
+    pass
