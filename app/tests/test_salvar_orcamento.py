@@ -1,5 +1,5 @@
 import pytest
-from app.models import Orcamento
+from app.models import Orcamento, Competencia
 from app.repositories.orcamento_repository import OrcamentoRepository
 from app.infrastructure.database.orm import OrcamentoOrm
 from unittest.mock import Mock
@@ -16,6 +16,13 @@ def test_salvar_orcamento_converte_dominio_em_orm():
 
     orcamento = Orcamento(
         id="202607GENERIC",
+        nome="Orçamento Teste",
+        descricao="Orçamento para teste de persistência",
+        estado="SP",
+        fonte_precos=Mock(),
+        competencia=Competencia(
+            2025,9
+        ),
         itens=[]
     )
 

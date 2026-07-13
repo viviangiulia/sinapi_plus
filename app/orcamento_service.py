@@ -1,42 +1,52 @@
 from app.models import (
-    ElementoQuantificavel,
     Estado,
     Orcamento,
     ComposicaoPrecificada,
     ComponentePrecificado,
+    Catalogo,
+    FontePrecos,
+    ComposicaoQuantificada,
 )
 from app.repositories.composicao_repository import ComposicaoRepository
 from app.repositories.preco_repository import PrecoRepository
-from app.repositories.catalogo_repository import CatalogoRepository
 from app.repositories.orcamento_repository import OrcamentoRepository
 import uuid
 from app.infrastructure.database.engine import engine
 from sqlalchemy.orm import Session
+from datetime import date
 
 
 def gerar_orcamento(
-    elementos: list[ElementoQuantificavel], estado: Estado
+    nome: str,
+    descricao: str | None,
+    estado: Estado,
+    fonte_precos: FontePrecos,
+    competencia: date,
+    composicoes_orcamento: list[ComposicaoQuantificada],
 ) -> Orcamento:
 
-    catalogo_repository = CatalogoRepository()
     composicao_repository = ComposicaoRepository()
     preco_repository = PrecoRepository()
 
     itens_orcamento = []
 
-    for elemento in elementos:
-        composicao_quantificada = catalogo_repository.buscar_codigo_composicao(elemento)
+    for composicao_quantificada in composicoes_orcamento:
 
         codigo_composicao = composicao_quantificada.codigo_composicao
 
-        composicao = composicao_repository.buscar_composicao(codigo_composicao)
+        composicao = composicao_repository.buscar_composicao(
+            codigo_composicao, composicao_quantificada.catalogo
+        )
 
         lista_componentes = []
 
         for componente in composicao.items:
+
             preco_item = preco_repository.buscar_preco(
                 item=componente.item,
                 estado=estado,
+                fonte_precos=fonte_precos,
+                competencia=competencia,
             )
 
             componente_precificado = ComponentePrecificado(
@@ -47,14 +57,21 @@ def gerar_orcamento(
 
         composicao_precificada = ComposicaoPrecificada(
             codigo=codigo_composicao,
-            estado=estado,
-            quantidade=elemento.quantidade,
+            quantidade=composicao_quantificada.quantidade,
             componentes=lista_componentes,
         )
 
         itens_orcamento.append(composicao_precificada)
 
-    return Orcamento(id=str(uuid.uuid4()), itens=itens_orcamento)
+    return Orcamento(
+        id=str(uuid.uuid4()),
+        nome=nome,
+        descricao=descricao,
+        estado=estado,
+        fonte_precos=fonte_precos,        
+        competencia=competencia,
+        itens=itens_orcamento,
+    )
 
 
 def salvar_orcamento(orcamento: Orcamento) -> None:
