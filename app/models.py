@@ -29,20 +29,6 @@ class Tubulacao:
             raise ValueError("Diâmetro não pode ser negativo.")
 
 
-@dataclass
-class TrechoRede:
-    id: int
-    tubulacao: Tubulacao
-    comprimento: float = 0.0
-
-    def check_valid_length(self):
-        if self.comprimento < 0:
-            raise ValueError("O comprimento do trecho não pode ser negativo.")
-
-    def __post_init__(self):
-        self.check_valid_length()
-
-
 class TipoItem(Enum):
     INSUMO = "Insumo"
     COMPOSICAO = "Composição"
@@ -66,6 +52,7 @@ class ComposicaoQuantificada:
     codigo_composicao: str
     catalogo: Catalogo
     quantidade: float
+    categoria: str
 
     def __post_init__(self):
         if self.quantidade < 0:

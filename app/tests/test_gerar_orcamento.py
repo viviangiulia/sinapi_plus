@@ -19,12 +19,14 @@ class ComposicoesMock:
             ComposicaoQuantificada(
                 codigo_composicao="COMP-AGUA-002",
                 quantidade=random.randint(1, 25),
-                catalogo=catalogo_base
+                catalogo=catalogo_base,
+                categoria="Água Potável"
             ),
             ComposicaoQuantificada(
                 codigo_composicao="COMP-ESGOTO-003",
                 quantidade=random.randint(1, 3),
-                catalogo=catalogo_base
+                catalogo=catalogo_base,
+                categoria="Esgoto Sanitário"
             ),
         ]
 
