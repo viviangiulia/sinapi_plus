@@ -1,294 +1,118 @@
-# Open Questions
+# Open Questions — Snapshot histórico e recálculo de orçamentos
 
-## OQ-001 — Representação de Especificações Técnicas
+As decisões centrais sobre persistência histórica e recálculo já foram definidas. Permanecem abertas as seguintes questões de comportamento e implementação.
 
-### Contexto
+## 1. O que acontece quando uma composição não existe mais no catálogo atual?
 
-Atualmente o domínio possui uma única classe `Especificacao` utilizada para representar os atributos necessários para resolução de composições no catálogo.
+Ao recalcular um orçamento, uma ou mais composições históricas podem não existir no catálogo atual.
 
-Exemplo atual:
+É necessário definir se a operação deve:
+
+* falhar integralmente e impedir todo o recálculo;
+* recalcular as composições disponíveis e reportar as indisponíveis;
+* permitir ao usuário substituir manualmente uma composição inexistente.
+
+### Decisão pendente
+
+Definir a política de tratamento para composições históricas ausentes no catálogo atual.
+
+---
+
+## 2. O recálculo cria um novo orçamento ou uma nova versão?
+
+O snapshot original deve permanecer imutável, mas ainda é necessário definir a identidade do resultado do recálculo.
+
+Possibilidades:
+
+* criar um orçamento completamente novo e independente;
+* criar um novo orçamento mantendo uma referência ao orçamento de origem;
+* implementar futuramente um conceito explícito de versionamento de orçamento.
+
+### Decisão pendente
+
+Definir se o resultado do recálculo é independente ou mantém rastreabilidade formal com o orçamento histórico de origem.
+
+---
+
+## 3. Como tratar um recálculo parcialmente possível?
+
+Um orçamento pode conter diversas composições, das quais apenas algumas ainda existem no catálogo atual.
+
+É necessário definir se o recálculo é uma operação atômica:
 
 ```text
-Especificacao
-├── material
-├── diametro
-└── profundidade
+Todas as composições podem ser recalculadas
+    → sucesso
+
+Pelo menos uma composição não pode ser recalculada
+    → falha completa
 ```
 
-Entretanto, durante a expansão do domínio, observou-se que diferentes categorias de elementos orçamentários possuem conjuntos distintos de atributos.
-
----
-
-### Exemplos Identificados
-
-| Categoria      | Possíveis Atributos |
-| -------------- | ------------------- |
-| Tubulação      | material, diâmetro  |
-| Poço de Visita | profundidade        |
-| Boca de Lobo   | possui_grelha       |
-| Pavimentação   | material, espessura |
-| Hidrômetro     | nenhum              |
-
----
-
-### Problema
-
-A evolução da classe atual pode resultar em uma estrutura contendo diversos atributos opcionais que não possuem significado para todas as categorias.
-
-Exemplo:
+ou parcial:
 
 ```text
-Especificacao(
-    material="PBA",
-    diametro=50,
-    profundidade=None,
-    possui_grelha=None,
-    espessura=None,
-)
+Composições disponíveis
+    → recalculadas
+
+Composições indisponíveis
+    → reportadas como erro ou pendência
 ```
 
----
+### Decisão pendente
 
-### Hipótese de Evolução
-
-Investigar a utilização de uma hierarquia de especificações especializadas.
-
-Exemplo conceitual:
-
-```text
-Especificacao
-├── EspecificacaoTubulacao
-├── EspecificacaoPocoVisita
-├── EspecificacaoBocaDeLobo
-├── EspecificacaoPavimentacao
-└── EspecificacaoHidrometro
-```
-
-Cada especificação possuiria apenas os atributos relevantes para sua categoria.
+Definir se o recálculo exige sucesso integral ou admite resultado parcial.
 
 ---
 
-### Possíveis Benefícios
+## 4. Como deve ser apresentada a diferença entre o histórico e o recálculo?
 
-* Modelo mais expressivo.
-* Redução de atributos opcionais.
-* Validações específicas por categoria.
-* Melhor aderência ao domínio.
-
----
-
-### Possíveis Desvantagens
-
-* Maior número de classes.
-* Catálogo de composições precisa lidar com múltiplos tipos de especificação.
-* Complexidade adicional de modelagem.
-
----
-
-### Decisão Atual
-
-Não implementar neste momento.
-
-Aguardar modelagem de mais categorias do domínio para avaliar se a diversidade de atributos justifica a criação de uma hierarquia de especificações.
-
-# OQ-002 — Adoção de Repository Pattern
-
-## Contexto
-
-Atualmente a aplicação realiza a leitura das bases de dados através de arquivos Excel (`.xlsx`).
-
-A leitura é executada durante a inicialização da aplicação e os dados são carregados em memória, sendo posteriormente armazenados em cache e no `session_state`.
-
----
-
-## Esquema Atual de Carregamento
-
-```text
-carregar_arquivos
-↓
-leitura da base de preços
-↓
-leitura da base de composições
-↓
-armazenamento em cache / session_state
-```
-
----
-
-## Problemas Identificados
-
-### Upload Manual de Arquivos
-
-Atualmente as bases precisam ser enviadas para o repositório para atualização dos dados.
-
-Consequências:
-
-* Necessidade de Pull Request para atualização das bases.
-* Dificuldade para atualização frequente dos dados.
-* Dependência do ciclo de deploy da aplicação.
-
----
-
-### Persistência Acoplada ao Excel
-
-Atualmente a única forma de leitura disponível é através de arquivos Excel.
-
-Consequências:
-
-* Dependência direta de `pd.read_excel`.
-* Dificuldade de migração para banco de dados.
-* Dificuldade de integração com APIs ou outras fontes de dados.
-
----
-
-### Regras de Negócio Acopladas a DataFrames
-
-Atualmente parte das regras de negócio é implementada diretamente sobre estruturas de DataFrame.
-
-Consequências:
-
-* Forte acoplamento à estrutura física dos dados.
-* Maior dificuldade para testes unitários.
-* Menor expressividade do modelo de domínio.
-* Dificuldade de separação entre domínio e infraestrutura.
-
----
-
-## Hipótese de Evolução
-
-Introduzir abstrações de Repository responsáveis por:
-
-1. Recuperar os dados da origem de persistência.
-2. Converter os dados para objetos do domínio.
-3. Isolar o domínio dos detalhes de armazenamento.
-
-Objetivo:
-
-```text
-Domínio
-↓
-Repository
-↓
-Infraestrutura
-```
-
-Ao invés de:
-
-```text
-Domínio
-↓
-DataFrame / Excel
-↓
-Persistência
-```
-
----
-
-## Possíveis Repositories
-
-### CatalogoComposicoesRepository
-
-Responsável por recuperar:
-
-* Composições
-* Componentes da composição
-* Coeficientes
-
-Retorna objetos do domínio:
-
-```text
-Composicao
-ComponenteComposicao
-ItemCatalogo
-```
-
----
-
-### CatalogoPrecosRepository
-
-Responsável por recuperar:
-
-* Preços dos itens de catálogo
-* Preços por estado
-
-Retorna objetos do domínio:
-
-```text
-PrecoItemCatalogo
-```
-
----
-
-### CatalogoElementosRepository
-
-Responsável por resolver especificações em composições orçamentárias.
-
-Exemplo:
-
-```text
-ElementoQuantificavel
-↓
-Código de Composição
-```
-
-**Observação:** nome e responsabilidade ainda em investigação.
-
----
-
-### OrcamentosRepository
-
-Responsável pela persistência das simulações realizadas.
+Como o orçamento histórico e o resultado recalculado podem possuir diferenças de preço e até de estrutura das composições, pode ser útil oferecer uma comparação futura.
 
 Exemplos:
 
-* Salvar orçamento.
-* Recuperar orçamento.
-* Duplicar orçamento.
-* Consultar simulações anteriores.
+* variação do custo total;
+* variação por categoria;
+* variação por composição;
+* componentes adicionados ou removidos;
+* alterações de coeficientes.
 
-Retorna objetos do domínio:
+### Decisão pendente
 
-```text
-Orcamento
-ComposicaoPrecificada
-```
+Definir se a comparação entre snapshot histórico e orçamento recalculado faz parte do escopo futuro do produto.
 
 ---
 
-## Possíveis Benefícios
+## 5. Qual deve ser a política de imutabilidade de um orçamento salvo?
 
-* Modelo mais expressivo.
-* Redução de acoplamento.
-* Maior aderência ao princípio da inversão de dependências (DIP).
-* Facilidade para testes unitários.
-* Flexibilidade para troca de mecanismos de persistência.
-* Evolução futura para SQLAlchemy e PostgreSQL sem impacto no domínio.
+A recuperação histórica deve reproduzir o snapshot persistido, mas ainda é necessário definir quais campos podem ser editados depois do salvamento.
 
----
+Por exemplo:
 
-## Possíveis Desvantagens
+* nome;
+* descrição;
+* categoria;
+* quantidade;
+* composições;
+* valores calculados.
 
-* Maior número de classes.
-* Maior complexidade arquitetural.
-* Necessidade de mapeamento entre estruturas persistidas e objetos do domínio.
-* Curva de aprendizado adicional.
+Uma possível política é permitir alterações apenas em metadados, como nome e descrição, mantendo imutáveis os dados financeiros e a memória de cálculo.
 
----
+### Decisão pendente
 
-## Questões em Aberto
-
-* Todos os catálogos devem possuir repositories independentes?
-* Os repositories devem retornar exclusivamente objetos do domínio?
-* Como será realizado o mapeamento entre estruturas persistidas e objetos do domínio?
-* Quais repositories serão necessários na primeira versão do sistema?
-* Existe necessidade de abstrações adicionais para escrita e atualização de dados?
+Definir quais campos de um orçamento salvo podem ser alterados sem gerar um novo snapshot.
 
 ---
 
-## Decisão Provisória
+## 6. Qual precisão e política de arredondamento devem ser utilizadas?
 
-Não introduzir banco de dados neste momento.
+O modelo de persistência utiliza valores decimais para quantidades, coeficientes e custos, mas ainda é necessário formalizar:
 
-Priorizar a introdução das abstrações de Repository utilizando as bases atuais em DataFrame como mecanismo de persistência.
+* número de casas decimais para quantidades;
+* número de casas decimais para coeficientes;
+* número de casas decimais para preços unitários;
+* número de casas decimais para custos totais;
+* regra de arredondamento utilizada pelo domínio.
 
-Após estabilização do modelo de domínio e dos repositories, reavaliar a adoção de SQLAlchemy e PostgreSQL.
+### Decisão pendente
+
+Formalizar a precisão decimal e as regras de arredondamento para garantir consistência entre cálculo, persistência e recuperação.
