@@ -1,7 +1,8 @@
-import pytest
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Dict
+from datetime import date
+from decimal import Decimal
 
 @dataclass(frozen=True)
 class Especificacao:
@@ -17,21 +18,6 @@ class Especificacao:
         if self.profundidade and self.profundidade < 0:
             raise ValueError("Profundidade não pode ser negativa.")
 
-
-@dataclass
-class ElementoQuantificavel:
-    "Define as características de um serviço da construção civil para um determinado escopo."
-    categoria: str
-    quantidade: float
-    especificacao: Especificacao
-
-    def __post_init__(self):
-        if self.quantidade < 0:
-            raise ValueError("Quantidade não pode ser negativa.")
-        
-    def __post_init__(self):
-        if self.quantidade < 0:
-            raise ValueError("Quantidade não pode ser negativa.")
 
 @dataclass(frozen=True)
 class Tubulacao:
@@ -57,59 +43,40 @@ class TrechoRede:
         self.check_valid_length()
 
 
+class TipoItem(Enum):
+    INSUMO = "Insumo"
+    COMPOSICAO = "Composição"
 
-class Rede:
-    def __init__(self, escopo_rede: str, trechos: List[TrechoRede]):
-        self.escopo_rede = escopo_rede  # TODO deve ser um Enum das redes disponíveis (Água, Esgoto, Drenagem)
-        self.trechos = trechos
 
-    @property
-    def comprimentos_rede_por_tubulacao(self) -> Dict[Tubulacao, float]:
-        totais = {}
+@dataclass(frozen=True)
+class FontePrecos:
+    """A base que é utilizada como referência de preços"""
+    codigo: str
+    nome: str
 
-        for trecho in self.trechos:
-            totais.setdefault(trecho.tubulacao, 0)
-            totais[trecho.tubulacao] += trecho.comprimento
 
-        return totais
-
-    def gerar_elementos_quantificaveis(self) -> List[ElementoQuantificavel]:
-        lista_elementos = []
-
-        for tubulacao, quantidade in self.comprimentos_rede_por_tubulacao.items():
-            lista_elementos.append(
-                ElementoQuantificavel(
-                    categoria="TUBULACAO",
-                    quantidade=quantidade,
-                    especificacao=Especificacao(
-                        material=tubulacao.material,
-                        diametro=tubulacao.diametro,
-                    ),
-                )
-            )
-
-        return lista_elementos
-
+@dataclass(frozen=True)
+class Catalogo:
+    """A base que concentra as informações de composições e insumos"""
+    codigo: str
+    nome: str
 
 @dataclass
 class ComposicaoQuantificada:
     codigo_composicao: str
+    catalogo: Catalogo
     quantidade: float
 
     def __post_init__(self):
         if self.quantidade < 0:
             raise ValueError("Quantidade não pode ser negativa.")
 
-
-class TipoItem(Enum):
-    INSUMO = "Insumo"
-    COMPOSICAO = "Composição"
-
-@dataclass
+@dataclass(frozen=True)
 class ItemCatalogo:
     codigo: str
     descricao: str
-    tipo:TipoItem
+    tipo: TipoItem
+    catalogo: Catalogo
 
     def __post_init__(self):
         if not self.codigo:
@@ -144,11 +111,30 @@ class Composicao:
 class Estado:
     sigla: str
 
-@dataclass
+@dataclass(frozen=True)
+class Competencia:
+    ano: int
+    mes: int
+
+    def __post_init__(self):
+        if not 1 <= self.mes <= 12:
+            raise ValueError(
+                "O mês da competência deve estar entre 1 e 12."
+            )
+
+    def para_date(self) -> date:
+        return date(self.ano, self.mes, 1)
+
+    def __str__(self) -> str:
+        return f"{self.mes:02d}/{self.ano}"
+
+@dataclass(frozen=True)
 class PrecoItemCatalogo:
     item: ItemCatalogo
+    preco_unitario: Decimal
     estado: Estado
-    preco_unitario: float
+    fonte_precos: FontePrecos
+    competencia: Competencia
 
     def __post_init__(self):
         if self.preco_unitario < 0:
@@ -171,9 +157,8 @@ class ComponentePrecificado:
 @dataclass
 class ComposicaoPrecificada:
     codigo: str
-    estado: Estado
     quantidade: float
-    componentes: List[ComponentePrecificado]
+    componentes: list[ComponentePrecificado]
 
     @property
     def custo_unitario(self):
@@ -189,7 +174,12 @@ class ComposicaoPrecificada:
 @dataclass
 class Orcamento:
     id: str
-    itens: List[ComposicaoPrecificada]
+    nome: str
+    descricao: str | None
+    estado: Estado
+    fonte_precos: FontePrecos
+    competencia: Competencia
+    itens: list[ComposicaoPrecificada]
 
     @property
     def custo_total(self):
