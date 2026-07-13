@@ -1,18 +1,42 @@
-from app.models import PrecoItemCatalogo, ItemCatalogo, TipoItem, Estado
-from typing import Dict
 from dataclasses import dataclass
+from decimal import Decimal
+from typing import Dict
+
 import pytest
 
-# Dado um estado e um item devo encontrar
-# Preço
+from app.models import (
+    Catalogo,
+    Competencia,
+    Estado,
+    FontePrecos,
+    ItemCatalogo,
+    PrecoItemCatalogo,
+    TipoItem,
+)
+
+
 @dataclass
 class CatalogoFakePrecos:
     catalogo: Dict
 
-    def buscar_preco(self, item: ItemCatalogo, estado: Estado):
+    def buscar_preco(
+        self,
+        item: ItemCatalogo,
+        estado: Estado,
+        fonte_precos: FontePrecos,
+        competencia: Competencia,
+    ) -> PrecoItemCatalogo:
+
         codigo_item = item.codigo
-        preco_unit = self.catalogo[estado][codigo_item]
-        return PrecoItemCatalogo(item=item, estado=estado, preco_unitario=preco_unit)
+        preco_unitario = self.catalogo[estado.sigla][codigo_item]
+
+        return PrecoItemCatalogo(
+            item=item,
+            estado=estado,
+            preco_unitario=Decimal(str(preco_unitario)),
+            fonte_precos=fonte_precos,
+            competencia=competencia,
+        )
 
 
 def test_buscar_preco_item():
@@ -33,22 +57,73 @@ def test_buscar_preco_item():
         }
     )
 
-    item = ItemCatalogo(
-        codigo="INS-001", descricao="Areia Média Lavada", tipo=TipoItem.INSUMO
+    catalogo = Catalogo(
+        codigo="SINAPI",
+        nome="SINAPI",
     )
 
-    preco_item = catalogo_precos.buscar_preco(item, "SP")
+    fonte_precos = FontePrecos(
+        codigo="SINAPI",
+        nome="SINAPI",
+    )
 
-    assert preco_item.preco_unitario == 18.20
+    competencia = Competencia(
+        ano=2026,
+        mes=6,
+    )
+
+    estado = Estado(sigla="SP")
+
+    item = ItemCatalogo(
+        codigo="INS-001",
+        descricao="Areia Média Lavada",
+        tipo=TipoItem.INSUMO,
+        catalogo=catalogo,
+    )
+
+    preco_item = catalogo_precos.buscar_preco(
+        item=item,
+        estado=estado,
+        fonte_precos=fonte_precos,
+        competencia=competencia,
+    )
+
+    assert preco_item.preco_unitario == Decimal("18.20")
+    assert preco_item.estado == estado
+    assert preco_item.fonte_precos == fonte_precos
+    assert preco_item.competencia == competencia
 
 
 def test_preco_deve_ser_positivo():
-    item = ItemCatalogo(
-        codigo="INS-001", descricao="Areia Média Lavada", tipo=TipoItem.INSUMO
+    catalogo = Catalogo(
+        codigo="SINAPI",
+        nome="SINAPI",
     )
-    with pytest.raises(ValueError):
+
+    fonte_precos = FontePrecos(
+        codigo="SINAPI",
+        nome="SINAPI",
+    )
+
+    competencia = Competencia(
+        ano=2026,
+        mes=6,
+    )
+
+    estado = Estado(sigla="MG")
+
+    item = ItemCatalogo(
+        codigo="INS-001",
+        descricao="Areia Média Lavada",
+        tipo=TipoItem.INSUMO,
+        catalogo=catalogo,
+    )
+
+    with pytest.raises(ValueError, match="Preço não pode ser negativo"):
         PrecoItemCatalogo(
             item=item,
-            estado="MG",
-            preco_unitario=-56.78
+            estado=estado,
+            preco_unitario=Decimal("-56.78"),
+            fonte_precos=fonte_precos,
+            competencia=competencia,
         )

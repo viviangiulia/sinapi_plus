@@ -1,10 +1,14 @@
 import pytest
-from app.models import ComponenteComposicao, ItemCatalogo, TipoItem,Composicao
+from app.models import ComponenteComposicao, ItemCatalogo, TipoItem,Composicao,Catalogo
 
+catalogo_teste = Catalogo(
+    codigo="SINAPI",
+    nome="SINAPI"
+)
 
 def test_coeficiente_nao_pode_ser_negativo():
     item = ItemCatalogo(
-        codigo="INS-001", descricao="Tubo PBA DN 50", tipo=TipoItem.INSUMO
+        codigo="INS-001", descricao="Tubo PBA DN 50", tipo=TipoItem.INSUMO,catalogo=catalogo_teste
     )
 
     with pytest.raises(ValueError):
@@ -27,5 +31,6 @@ def test_item_catalogo_deve_ter_codigo_valido():
        ItemCatalogo(
         codigo="",
         descricao="Areia Média Lavada",
-        tipo=TipoItem.INSUMO
+        tipo=TipoItem.INSUMO,
+        catalogo=catalogo_teste
     )
