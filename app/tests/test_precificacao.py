@@ -59,12 +59,10 @@ def test_buscar_preco_item():
 
     catalogo = Catalogo(
         codigo="SINAPI",
-        nome="SINAPI",
     )
 
     fonte_precos = FontePrecos(
         codigo="SINAPI",
-        nome="SINAPI",
     )
 
     competencia = Competencia(
@@ -79,6 +77,7 @@ def test_buscar_preco_item():
         descricao="Areia Média Lavada",
         tipo=TipoItem.INSUMO,
         catalogo=catalogo,
+        unidade="M3"
     )
 
     preco_item = catalogo_precos.buscar_preco(
@@ -97,12 +96,10 @@ def test_buscar_preco_item():
 def test_preco_deve_ser_positivo():
     catalogo = Catalogo(
         codigo="SINAPI",
-        nome="SINAPI",
     )
 
     fonte_precos = FontePrecos(
         codigo="SINAPI",
-        nome="SINAPI",
     )
 
     competencia = Competencia(
@@ -117,6 +114,7 @@ def test_preco_deve_ser_positivo():
         descricao="Areia Média Lavada",
         tipo=TipoItem.INSUMO,
         catalogo=catalogo,
+        unidade="M3"
     )
 
     with pytest.raises(ValueError, match="Preço não pode ser negativo"):

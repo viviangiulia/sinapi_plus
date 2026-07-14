@@ -3,12 +3,11 @@ from app.models import ComponenteComposicao, ItemCatalogo, TipoItem,Composicao,C
 
 catalogo_teste = Catalogo(
     codigo="SINAPI",
-    nome="SINAPI"
 )
 
 def test_coeficiente_nao_pode_ser_negativo():
     item = ItemCatalogo(
-        codigo="INS-001", descricao="Tubo PBA DN 50", tipo=TipoItem.INSUMO,catalogo=catalogo_teste
+        codigo="INS-001", descricao="Tubo PBA DN 50", tipo=TipoItem.INSUMO,catalogo=catalogo_teste,unidade="M"
     )
 
     with pytest.raises(ValueError):
@@ -21,7 +20,8 @@ def test_composicao_deve_possuir_componentes():
        Composicao(
         codigo="COMP-PAV-004",
         descricao="Pavimentação CBUQ Capa 5cm",
-        items=[]
+        items=[],
+        unidade="M2"
     )
 
 
@@ -32,5 +32,6 @@ def test_item_catalogo_deve_ter_codigo_valido():
         codigo="",
         descricao="Areia Média Lavada",
         tipo=TipoItem.INSUMO,
-        catalogo=catalogo_teste
+        catalogo=catalogo_teste,
+        unidade="M3"
     )

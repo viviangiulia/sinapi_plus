@@ -13,7 +13,7 @@ from datetime import date
 class ComposicoesMock:
 
     def gerar_orcamento_aleatorio(self):
-        catalogo_base = Catalogo(codigo="CATPROPRIO", nome="base_composicoes_v2")
+        catalogo_base = Catalogo(codigo="base_composicoes_v2")
 
         return [
             ComposicaoQuantificada(
@@ -36,7 +36,7 @@ def test_gerar_orcamento() -> Orcamento:
     
 
     fonte_precos_base = FontePrecos(
-        codigo="BPDEFAULT", nome="precos_composicoes_insumos"
+        codigo="precos_composicoes_insumos"
     )
 
     orcamento = gerar_orcamento(
