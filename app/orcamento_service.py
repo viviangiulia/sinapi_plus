@@ -57,8 +57,11 @@ def gerar_orcamento(
 
         composicao_precificada = ComposicaoPrecificada(
             codigo=codigo_composicao,
+            descricao=composicao.descricao,
             quantidade=composicao_quantificada.quantidade,
             componentes=lista_componentes,
+            categoria=composicao_quantificada.categoria,
+            unidade=composicao.unidade
         )
 
         itens_orcamento.append(composicao_precificada)

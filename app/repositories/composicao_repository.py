@@ -14,7 +14,7 @@ class ComposicaoRepository:
 
     def buscar_composicao(self, codigo: str, catalogo: Catalogo) -> Composicao:
 
-        composicoes_df = get_database(catalogo.nome)
+        composicoes_df = get_database(catalogo.codigo)
 
         dados_composicao = composicoes_df.loc[
             composicoes_df["codigo_composicao"] == codigo
@@ -22,7 +22,7 @@ class ComposicaoRepository:
 
         if dados_composicao.empty:
             raise ComposicaoNaoEncontradaError(
-                f"Composição {codigo} não encontrada no catálogo {catalogo.nome}."
+                f"Composição {codigo} não encontrada no catálogo {catalogo.codigo}."
             )
 
         primeira_linha = dados_composicao.iloc[0]
@@ -36,6 +36,7 @@ class ComposicaoRepository:
                 descricao=linha["descricao_da_composicao_secundaria"],
                 tipo=TipoItem(linha["tipo"]),
                 catalogo=catalogo,
+                unidade=linha["unidade_composicao_secundaria"]
             )
 
             componentes.append(
@@ -48,5 +49,6 @@ class ComposicaoRepository:
         return Composicao(
             codigo=primeira_linha["codigo_composicao"],
             descricao=primeira_linha["descricao_da_composicao"],
+            unidade=primeira_linha["unidade"],
             items=componentes,
         )

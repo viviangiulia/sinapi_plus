@@ -13,7 +13,7 @@ class PrecoRepository:
         competencia: Competencia,
     ) -> PrecoItemCatalogo:
 
-        precos_df = get_database(fonte_precos.nome)
+        precos_df = get_database(fonte_precos.codigo)
 
         precos_df["competencia"] = pd.to_datetime(
             precos_df["competencia"]
