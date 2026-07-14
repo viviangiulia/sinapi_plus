@@ -38,14 +38,11 @@ class TipoItem(Enum):
 class FontePrecos:
     """A base que é utilizada como referência de preços"""
     codigo: str
-    nome: str
-
 
 @dataclass(frozen=True)
 class Catalogo:
     """A base que concentra as informações de composições e insumos"""
     codigo: str
-    nome: str
 
 @dataclass
 class ComposicaoQuantificada:
@@ -62,6 +59,7 @@ class ComposicaoQuantificada:
 class ItemCatalogo:
     codigo: str
     descricao: str
+    unidade: str
     tipo: TipoItem
     catalogo: Catalogo
 
@@ -85,6 +83,7 @@ class ComponenteComposicao:
 class Composicao:
     codigo: str
     descricao: str
+    unidade: str
     items: List[ComponenteComposicao]
 
     def __post_init__(self):
@@ -144,8 +143,11 @@ class ComponentePrecificado:
 @dataclass
 class ComposicaoPrecificada:
     codigo: str
+    descricao: str
+    unidade: str
     quantidade: float
     componentes: list[ComponentePrecificado]
+    categoria: str
 
     @property
     def custo_unitario(self):

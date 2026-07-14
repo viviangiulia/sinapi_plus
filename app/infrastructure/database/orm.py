@@ -6,7 +6,6 @@ from sqlalchemy import (
     ForeignKey,
     Numeric,
     String,
-    UniqueConstraint,
 )
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -172,6 +171,11 @@ class ComponenteComposicaoPersistidoOrm(Base):
     custo_unitario: Mapped[Decimal] = mapped_column(
         Numeric(18, 4),
         nullable=False,
+    )
+
+    catalogo: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False
     )
 
     composicao_precificada: Mapped["ComposicaoPrecificadaOrm"] = relationship(
