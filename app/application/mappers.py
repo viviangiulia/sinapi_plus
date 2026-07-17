@@ -11,7 +11,7 @@ def request_to_input_dto(payload: GerarOrcamentoRequest) -> OrcamentoInputDTO:
     nome = payload.nome
     descricao = payload.descricao
     estado = payload.estado
-    fonte_precos = payload.fonte_precos
+    fonte_precos = payload.fonte_precos.value
     competencia = CompetenciaInputDTO(
         ano=payload.competencia.year, mes=payload.competencia.month
     )
@@ -21,7 +21,7 @@ def request_to_input_dto(payload: GerarOrcamentoRequest) -> OrcamentoInputDTO:
     for item_request in payload.itens:
         itens.append(
             ComposicaoQuantificadaInputDTO(
-                codigo_composicao=item_request.codigo, catalogo=item_request.catalogo
+                codigo_composicao=item_request.codigo, catalogo=item_request.catalogo.value
             ,
             quantidade=float(item_request.quantidade),
             categoria=item_request.categoria,
