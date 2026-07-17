@@ -3,9 +3,9 @@ from app.models import (
     Orcamento,
     ComposicaoPrecificada,
     ComponentePrecificado,
-    Catalogo,
     FontePrecos,
-    ComposicaoQuantificada,
+    Competencia,
+    Catalogo
 )
 from app.repositories.composicao_repository import ComposicaoRepository
 from app.repositories.preco_repository import PrecoRepository
@@ -13,17 +13,20 @@ from app.repositories.orcamento_repository import OrcamentoRepository
 import uuid
 from app.infrastructure.database.engine import engine
 from sqlalchemy.orm import Session
-from datetime import date
+from app.application.dtos import OrcamentoInputDTO
 
 
-def gerar_orcamento(
-    nome: str,
-    descricao: str | None,
-    estado: Estado,
-    fonte_precos: FontePrecos,
-    competencia: date,
-    composicoes_orcamento: list[ComposicaoQuantificada],
+def gerar_orcamento_service(
+    dto: OrcamentoInputDTO,
 ) -> Orcamento:
+    nome = dto.nome
+    descricao = dto.descricao
+    composicoes_orcamento = dto.itens
+    estado = Estado(sigla=dto.estado)
+    fonte_precos = FontePrecos(codigo=dto.fonte_precos)
+    competencia = Competencia(
+        ano=dto.competencia.ano,
+        mes=dto.competencia.mes)
 
     composicao_repository = ComposicaoRepository()
     preco_repository = PrecoRepository()
@@ -35,7 +38,7 @@ def gerar_orcamento(
         codigo_composicao = composicao_quantificada.codigo_composicao
 
         composicao = composicao_repository.buscar_composicao(
-            codigo_composicao, composicao_quantificada.catalogo
+            codigo_composicao, Catalogo(codigo=composicao_quantificada.catalogo)
         )
 
         lista_componentes = []
@@ -61,7 +64,7 @@ def gerar_orcamento(
             quantidade=composicao_quantificada.quantidade,
             componentes=lista_componentes,
             categoria=composicao_quantificada.categoria,
-            unidade=composicao.unidade
+            unidade=composicao.unidade,
         )
 
         itens_orcamento.append(composicao_precificada)
@@ -71,13 +74,13 @@ def gerar_orcamento(
         nome=nome,
         descricao=descricao,
         estado=estado,
-        fonte_precos=fonte_precos,        
+        fonte_precos=fonte_precos,
         competencia=competencia,
         itens=itens_orcamento,
     )
 
 
-def salvar_orcamento(orcamento: Orcamento) -> None:
+def salvar_orcamento_service(orcamento: Orcamento) -> None:
 
     with Session(engine) as session:
 
@@ -93,7 +96,7 @@ def salvar_orcamento(orcamento: Orcamento) -> None:
             raise
 
 
-def consultar_orcamento_salvo(id: str) -> Orcamento:
+def consultar_orcamento_service(id: str) -> Orcamento:
     with Session(engine) as session:
         repository = OrcamentoRepository(session)
 
