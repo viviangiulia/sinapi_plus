@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from decimal import Decimal
 from datetime import date
 from enum import Enum
@@ -55,4 +55,31 @@ class GerarOrcamentoRequest(BaseModel):
     itens: list[ItemOrcamentoRequest] = Field(default_factory=list)
 
 
+class QueryOrcamentosRequest(BaseModel):
+    nome: str | None = None
+    descricao: str | None = None
+    estado: str | None = Field(default=None, max_length=2, min_length=2)
+    fonte_precos: FontePrecoschema = Field(
+        max_length=50,
+        default=FontePrecoschema.SINAPI,
+    )
 
+    competencia: date | None = None
+    competencia_inicio: date | None = None
+    competencia_fim: date | None = None
+
+    page: int = Field(ge=1, default=1)
+    limit: int = Field(ge=1, le=100, default=10)
+
+    @model_validator(mode="after")
+    def validar_intervalo_datas(self):
+        if (
+            self.competencia_inicio
+            and self.competencia_fim
+            and self.competencia_inicio > self.competencia_fim
+        ):
+            raise ValueError(
+                "competencia_inicio deve ser anterior ou igual a competencia_fim."
+            )
+
+        return self
