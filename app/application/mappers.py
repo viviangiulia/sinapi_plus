@@ -1,8 +1,9 @@
-from app.api.schemas.requests import GerarOrcamentoRequest
+from app.api.schemas.requests import GerarOrcamentoRequest, QueryOrcamentosRequest
 from app.application.dtos import (
     OrcamentoInputDTO,
     CompetenciaInputDTO,
     ComposicaoQuantificadaInputDTO,
+    QueryOrcamentosDTO
 )
 
 
@@ -35,3 +36,18 @@ def request_to_input_dto(payload: GerarOrcamentoRequest) -> OrcamentoInputDTO:
         competencia=competencia,
         itens=itens,
     )
+
+
+def request_query_to_dto(payload:QueryOrcamentosRequest) -> QueryOrcamentosDTO:
+    return QueryOrcamentosDTO(
+        nome=payload.nome,
+        descricao=payload.descricao,
+        estado=payload.estado,
+        fonte_precos=payload.fonte_precos,
+        competencia=payload.competencia,
+        competencia_inicio=payload.competencia_inicio,
+        competencia_fim=payload.competencia_fim,
+        page=payload.page,
+        limit=payload.limit
+    )
+

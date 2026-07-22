@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 
 @dataclass(frozen=True)
 class EstadoInputDTO:
@@ -30,3 +31,18 @@ class OrcamentoInputDTO:
     fonte_precos: str
     competencia: CompetenciaInputDTO
     itens: list[ComposicaoQuantificadaInputDTO]
+
+
+@dataclass(frozen=True)
+class QueryOrcamentosDTO:
+    nome: str | None = None
+    descricao: str | None = None
+    estado: str | None = None
+    fonte_precos: str | None = None
+
+    competencia: date | None = None
+    competencia_inicio: date | None = None
+    competencia_fim: date | None = None
+
+    page: int = 1
+    limit: int = 10

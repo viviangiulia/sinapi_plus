@@ -11,9 +11,10 @@ from app.repositories.composicao_repository import ComposicaoRepository
 from app.repositories.preco_repository import PrecoRepository
 from app.repositories.orcamento_repository import OrcamentoRepository
 import uuid
+from uuid import UUID
 from app.infrastructure.database.engine import engine
 from sqlalchemy.orm import Session
-from app.application.dtos import OrcamentoInputDTO
+from app.application.dtos import OrcamentoInputDTO, QueryOrcamentosDTO
 
 
 def gerar_orcamento_service(
@@ -96,8 +97,15 @@ def salvar_orcamento_service(orcamento: Orcamento) -> None:
             raise
 
 
-def consultar_orcamento_service(id: str) -> Orcamento:
+def consultar_orcamento_service(id: UUID) -> Orcamento:
     with Session(engine) as session:
         repository = OrcamentoRepository(session)
 
         return repository.buscar_orcamento(id)
+
+
+def listar_orcamento_service(dados:QueryOrcamentosDTO):
+    with Session(engine) as session:
+        repository = OrcamentoRepository(session)
+
+        return repository.listar_orcamentos(dados)
